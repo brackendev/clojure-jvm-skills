@@ -20,7 +20,7 @@ user-invocable: false
 
 Layered on top of the [clojure](https://github.com/brackendev/clojure-skills) skill, which defines host-neutral Clojure family guidance. This skill applies only to JVM Clojure (`.clj` files targeting the JVM, `deps.edn` projects, `project.clj`, `build.clj`). It overrides the baseline for Java interop, JVM-typed exceptions, JVM resource cleanup, the reference primitives (`ref`, `agent`, STM), `alter-var-root`, and the Clojure CLI / `tools.build` / `clj-kondo` / `cljfmt` / test-runner / nREPL workflow.
 
-ClojureScript and ClojureDart deltas live in their own packages ([clojurescript-skills](https://github.com/brackendev/clojurescript-skills) when published, [clojuredart-skills](https://github.com/brackendev/clojuredart-skills)). Do not apply this skill's interop, exception, or resource rules to those dialects.
+ClojureScript and ClojureDart deltas live in their own packages ([clojurescript-skills](https://github.com/brackendev/clojurescript-skills), [clojuredart-skills](https://github.com/brackendev/clojuredart-skills)). Do not apply this skill's interop, exception, or resource rules to those dialects.
 
 ## Key Rules
 

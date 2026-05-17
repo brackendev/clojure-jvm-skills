@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## 0.1.2
+
+### Changed
+
+- The `clojure-jvm` `SKILL.md` now references [clojurescript-skills](https://github.com/brackendev/clojurescript-skills) as a published companion. The previous "when published" qualifier has been removed.
+
 ## 0.1.1
 
 ### Changed
