@@ -1,0 +1,8 @@
+interface:
+  display_name: "JVM Clojure"
+  short_description: "JVM-specific Clojure: Java interop, refs/agents/STM, with-open, exception handling, and CLI workflow."
+  default_prompt: "Review this JVM Clojure code for idiomatic interop, resource cleanup, and state management."
+  brand_color: "#E76F00"
+
+policy:
+  allow_implicit_invocation: true

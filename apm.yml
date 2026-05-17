@@ -1,0 +1,16 @@
+name: clojure-jvm-skills
+version: 0.1.0
+description: JVM Clojure toolkit covering Java interop, reference and STM primitives, JVM resource cleanup, exception handling, and the Clojure CLI workflow. Layers on top of clojure-skills.
+author: Bracken Spencer
+license: MIT
+target: all
+type: skill
+dependencies:
+  apm: []
+  mcp: []
+devDependencies:
+  apm: []
+compilation:
+  target: all
+  strategy: distributed
+  source_attribution: true
