@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## 0.1.1
+
+### Changed
+
+- Merged the `MCP Integration` section in `references/project-workflows.md` into the `REPL` section. The recovery step (start nREPL with `clj -M:nrepl &` when none is running) now leads the section and is unconditional, so it applies whether or not `clojure-mcp` is in use. The `clojure-mcp` paragraph follows as an enhancement that connects over the running nREPL.
+
 ## 0.1.0
 
 ### Added

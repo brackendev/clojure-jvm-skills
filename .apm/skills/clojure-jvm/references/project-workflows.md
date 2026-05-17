@@ -1,12 +1,6 @@
 # JVM Clojure Project Workflows
 
-Reference for the Clojure CLI, MCP integration, project structure, `deps.edn` configuration, lint and format tooling, the test-runner workflow, nREPL, and JVM REPL practices.
-
-## MCP Integration
-
-This skill is designed to work with [clojure-mcp](https://github.com/bhauman/clojure-mcp), an MCP server for REPL-driven Clojure development. When clojure-mcp is available, use its tools for REPL evaluation, namespace reloading, and file operations instead of shell commands.
-
-If clojure-mcp tools are not available and an `:nrepl` alias exists, start nREPL in the background with `clj -M:nrepl &` and restart the session so the MCP server can connect.
+Reference for the Clojure CLI, project structure, `deps.edn` configuration, lint and format tooling, the test-runner workflow, and the JVM REPL workflow (nREPL, `clojure-mcp`).
 
 ## CLI
 
@@ -67,7 +61,11 @@ my-project/
 
 ## REPL
 
-The host-neutral REPL conventions (`(comment ...)` scratchpads, `in-ns`, fully-qualified references across namespaces) live in the [clojure](https://github.com/brackendev/clojure-skills) baseline skill. The JVM-specific additions are below.
+The host-neutral REPL conventions (`(comment ...)` scratchpads, `in-ns`, fully-qualified references across namespaces) and the REPL-driven development principle live in the [clojure](https://github.com/brackendev/clojure-skills) baseline skill. The JVM-specific additions are below.
+
+Connect to a running nREPL when available. If none is running and the project defines an `:nrepl` alias, start one in the background with `clj -M:nrepl &` and restart the session so the editor or MCP server can connect.
+
+When [clojure-mcp](https://github.com/bhauman/clojure-mcp) is available, prefer its tools (REPL evaluation, namespace reload, file operations) over shell commands; it connects over the running nREPL.
 
 Reload namespaces with the `:reload` flag to work with the latest code:
 
