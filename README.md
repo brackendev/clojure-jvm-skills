@@ -6,7 +6,7 @@ Skills follow the [Agent Skills](https://agentskills.io) open standard. The `clo
 
 ## Companion packages
 
-Four sibling APM packages. This package layers on top of [clojure-skills](https://github.com/brackendev/clojure-skills) and covers only what is JVM-specific. Install `clojure-skills` alongside it for JVM Clojure work; install `biff-skills` as well for Biff projects; install `clojuredart-skills` instead for ClojureDart / Flutter work.
+Five sibling APM packages. This package layers on top of [clojure-skills](https://github.com/brackendev/clojure-skills) and covers only what is JVM-specific. Install `clojure-skills` alongside it for JVM Clojure work; install `biff-skills` as well for Biff projects; install `fulcro-skills` as well for Fulcro projects; install `clojuredart-skills` instead for ClojureDart / Flutter work.
 
 | Package | Focus | Layers on |
 |---------|-------|-----------|
@@ -14,6 +14,7 @@ Four sibling APM packages. This package layers on top of [clojure-skills](https:
 | [clojure-jvm-skills](https://github.com/brackendev/clojure-jvm-skills) (this package) | JVM-specific Clojure (Java interop, refs / agents / STM, `with-open`, JVM-typed exceptions, `alter-var-root`, Clojure CLI / `tools.build` / `clj-kondo` / `cljfmt` / `test-runner` / nREPL workflow). | `clojure-skills` |
 | [clojurescript-skills](https://github.com/brackendev/clojurescript-skills) | ClojureScript-specific style (JavaScript interop, externs inference, macro stage separation, `catch :default`, JS-flavored numbers and truthiness, the `cljs.main` workflow). Triggers on `.cljs`, `.cljc` compiled to JS, `shadow-cljs.edn`, `figwheel-main.edn`. | `clojure-skills` |
 | [biff-skills](https://github.com/brackendev/biff-skills) | [Biff](https://biffweb.com/) web framework on the JVM: scaffolding, conventions, deployment. | `clojure-skills` + `clojure-jvm-skills` |
+| [fulcro-skills](https://github.com/brackendev/fulcro-skills) | [Fulcro](https://github.com/fulcrologic/fulcro) full-stack framework: `defsc` components, idents and the normalized client database, mutations, `df/load!`, dynamic routing, forms, UI state machines, Fulcro Inspect, and the Pathom 3 server. Triggers on `com.fulcrologic.fulcro.*`, `com.fulcrologic.rad.*`, `com.wsscode.pathom3.*`, `defsc`, `defmutation`, `defrouter`, `df/load!`, and ident vectors. | `clojure-skills` + `clojurescript-skills` + `clojure-jvm-skills` |
 | [clojuredart-skills](https://github.com/brackendev/clojuredart-skills) | ClojureDart on Flutter: Dart interop, type hints, `cljd.flutter` directives, async, FFI, REPL, Flutter project workflow. Triggers on `.cljd`, `cljd.flutter`. | `clojure-skills` |
 
 ## Install
