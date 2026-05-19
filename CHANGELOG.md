@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 0.1.3
+
+### Added
+
+- A repo-root `CONVENTIONS.md` that defines the argument grammar, scope vocabulary, and mutation defaults any user-invocable skill in this package will follow. Three rules cover argument grammar (one sanctioned flag, `--report`), scope vocabulary (`(no argument)`, `all`, `<path>`), and mutation-as-default. The document includes worked examples drawn from the companion [clojure-skills](https://github.com/brackendev/clojure-skills) package because this plugin ships no user-invocable skill today, plus an author checklist for any future addition.
+
+### Changed
+
+- `CONTRIBUTING.md` now links to `CONVENTIONS.md` from the Skill conventions section.
+
 ## 0.1.2
 
 ### Changed

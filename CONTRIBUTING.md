@@ -53,6 +53,8 @@ Runtime install (requires `apm` and the runtime CLIs you want to verify: `claude
 
 ## Skill conventions
 
+For the argument grammar, scope vocabulary, and mutation defaults that any user-invocable skill in this plugin will follow, see [CONVENTIONS.md](CONVENTIONS.md).
+
 | Setting | When to use |
 |---------|-------------|
 | `user-invocable: true`, `disable-model-invocation: true` | User-only slash command. |
