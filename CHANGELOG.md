@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## 0.1.4 - 2026-05-20
+
+### Changed
+
+- Cross-references to `clojure-skills` updated for the `clj-tidy` → `clj-fix` rename in that companion package. The worked examples in `CONVENTIONS.md` now show `/clj-fix` rather than `/clj-tidy`.
+- The `CONVENTIONS.md` command-verb section now lists noun-first command suffixes (`-fix`, `-sync`, `-review`, and the rest) rather than verb-first patterns, reflecting the family's noun-first canonical naming.
+
 ## 0.1.3
 
 ### Added

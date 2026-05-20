@@ -38,7 +38,7 @@ Skills that can mutate the workspace apply changes when invoked. The operator pa
 
 Only the literal token `--report` enables report-only mode. Natural-language phrases ("preview", "dry run", "rehearse") are scope input or step keywords, not mode triggers. A skill that conflates them is wrong.
 
-Command verbs reinforce the default. Skills named `/fix-*`, `/sync-*`, `/commit`, `/prune-*`, `/rebuild-*`, `/tidy`, `/new`, and similar action verbs mutate by default. Skills named `/review-*`, `/audit-*`, `/check-*` are pure-report.
+Command suffixes reinforce the default. The family follows a noun-first `<target>-<verb>` pattern, so the trailing verb signals behavior. Skills with suffix `-fix`, `-sync`, `-prune`, `-rebuild`, `-new`, `-deploy`, `-upgrade`, `-test`, `-create`, `-apply` mutate by default. Skills with suffix `-review`, `-audit`, `-check` are pure-report. Bare verbs `/commit` and `/pause` are session-scoped exceptions that mutate by default.
 
 ## Classification
 
@@ -70,18 +70,18 @@ The section name `## Customization` is retired.
 
 ## Worked examples
 
-This plugin has no user-invocable skills yet, so the examples below illustrate how the rules apply to JVM Clojure workflows. The named commands (`/clj-tidy`, `/clj-new`, `/clj-smells-review`) live today in the companion [clojure-skills](https://github.com/brackendev/clojure-skills) plugin and operate across `.clj`, `.cljs`, `.cljc`, and `.cljd`. If a JVM-only variant of any such workflow lands here in the future, it follows the same shape.
+This plugin has no user-invocable skills yet, so the examples below illustrate how the rules apply to JVM Clojure workflows. The named commands (`/clj-fix`, `/clj-new`, `/clj-smells-review`) live today in the companion [clojure-skills](https://github.com/brackendev/clojure-skills) plugin and operate across `.clj`, `.cljs`, `.cljc`, and `.cljd`. If a JVM-only variant of any such workflow lands here in the future, it follows the same shape.
 
-### Mutating pipeline skill with `--report` (model: `/clj-tidy`)
+### Mutating pipeline skill with `--report` (model: `/clj-fix`)
 
 ```
-/clj-tidy                    # all four steps; format writes
-/clj-tidy lint               # lint only (pure-read; no writes anywhere)
-/clj-tidy format             # format step; writes via cljfmt fix
-/clj-tidy lint test          # combined step keywords
-/clj-tidy --report           # all four steps; format reads via cljfmt check
-/clj-tidy format --report    # format step; no writes
-/clj-tidy all                # synonym for (no argument)
+/clj-fix                    # all four steps; format writes
+/clj-fix lint               # lint only (pure-read; no writes anywhere)
+/clj-fix format             # format step; writes via cljfmt fix
+/clj-fix lint test          # combined step keywords
+/clj-fix --report           # all four steps; format reads via cljfmt check
+/clj-fix format --report    # format step; no writes
+/clj-fix all                # synonym for (no argument)
 ```
 
 The skill writes when the `format` step runs without `--report`. With `--report`, the format step runs `cljfmt check`, which reports diffs without writing. The other three steps (`lint`, `test`, `dry`) are pure-read regardless. The `## Mutation` section in the skill body documents this asymmetry.
@@ -130,9 +130,9 @@ When adding or modifying a user-invocable skill, confirm each item before commit
 
 - [ ] Skill has a `## Arguments` section (or is listed under [Exemptions](#exemptions)).
 - [ ] Scope rows match the canonical table; opt-in rows appear only where the skill genuinely supports them.
-- [ ] If the skill mutates, the command verb signals it (`/fix-*`, `/sync-*`, `/commit`, `/prune-*`, `/rebuild-*`, `/tidy`, `/new`).
+- [ ] If the skill mutates, the command suffix signals it (`-fix`, `-sync`, `-prune`, `-rebuild`, `-new`, `-deploy`, `-upgrade`, `-test`, `-create`, `-apply`, or the bare verbs `/commit` and `/pause`).
 - [ ] If the skill mutates and preview is useful, `--report` is documented.
-- [ ] If the skill is pure-report, the verb signals it (`/review-*`, `/audit-*`, `/check-*`) and the skill has no `--report` flag.
+- [ ] If the skill is pure-report, the suffix signals it (`-review`, `-audit`, `-check`) and the skill has no `--report` flag.
 - [ ] No `## Customization` section.
 - [ ] No `--name` flags other than `--report`. Tool-level flags the skill calls internally (for example, `cljfmt check`, `clj-kondo --lint`, `clojure -T:build`) are not skill flags and do not count.
 - [ ] Frontmatter `name` matches the skill's directory name.
