@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## 0.1.5 - 2026-05-20
+
+### Changed
+
+- `CONTRIBUTING.md` Layout table now includes a row for `CONVENTIONS.md`, aligning the package with the family-wide structural template.
+
 ## 0.1.4 - 2026-05-20
 
 ### Changed
