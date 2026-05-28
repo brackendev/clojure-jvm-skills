@@ -6,7 +6,7 @@ These conventions apply to user-invocable skills (`user-invocable: true` in fron
 
 This plugin ships no user-invocable skill today. The rules below define the contract that any future user-invocable JVM Clojure skill will honor, and the contract that a reader who learned the standard from a companion package ([clojure-skills](https://github.com/brackendev/clojure-skills), [clojurescript-skills](https://github.com/brackendev/clojurescript-skills), [clojuredart-skills](https://github.com/brackendev/clojuredart-skills), [biff-skills](https://github.com/brackendev/biff-skills), [fulcro-skills](https://github.com/brackendev/fulcro-skills)) can expect to apply here.
 
-## The three rules
+## The four rules
 
 ### Rule 1: argument grammar
 
@@ -39,6 +39,29 @@ Skills that can mutate the workspace apply changes when invoked. The operator pa
 Only the literal token `--report` enables report-only mode. Natural-language phrases ("preview", "dry run", "rehearse") are scope input or step keywords, not mode triggers. A skill that conflates them is wrong.
 
 Command suffixes reinforce the default. The family follows a noun-first `<target>-<verb>` pattern, so the trailing verb signals behavior. Skills with suffix `-fix`, `-sync`, `-prune`, `-rebuild`, `-new`, `-deploy`, `-upgrade`, `-test`, `-create`, `-apply` mutate by default. Skills with suffix `-review`, `-audit`, `-check` are pure-report. Bare verbs `/commit` and `/pause` are session-scoped exceptions that mutate by default.
+
+### Rule 4: vendored and generated paths are excluded by default
+
+A mutating skill that walks the workspace excludes vendored, generated, and dependency-locked paths from its scope. The operator opts back in per file by naming the path explicitly. No new `--name` flag is introduced; the override rides on Rule 1's `<path>` `<glob>` row.
+
+The boundary statement: Rule 4 applies to mutating skills that discover candidate files from the workspace. It does not apply to skills whose target set is defined by an explicit project operation, template, dependency model, git operation, or named path argument.
+
+**Exclusion set.** Two filters apply together. A path that matches either filter is excluded.
+
+1. `.gitignore`-matched paths. Anything excluded by the project's `.gitignore`, `.git/info/exclude`, or the global excludes file is out of scope. Resolve membership with `git check-ignore -v -- <path>`.
+2. Hardcoded floor (excluded even when the project tracks the path):
+
+   | Category | Patterns |
+   |----------|----------|
+   | Dependency directories | `node_modules/`, `vendor/`, `third_party/`, `.bundle/` |
+   | Build outputs | `target/`, `build/`, `dist/`, `out/`, `.shadow-cljs/`, `cljd-out/` |
+   | Lock files | `*.lock`, `package-lock.json`, `yarn.lock`, `pnpm-lock.yaml`, `Gemfile.lock`, `Cargo.lock`, `poetry.lock`, `composer.lock` |
+
+**Override.** When the operator names a vendored or generated file in the arguments through the `<path>` `<glob>` row, the filter does not apply to that target. Naming the path directly is treated as informed consent. The filter remains active for broad scopes: `(no argument)`, `all`, or a directory whose contents include vendored sub-paths.
+
+**Reporting.** The skill includes a single "skipped N vendored or generated paths" line in its results when the filter excluded any path. Under `--report`, the skill emits the full list so the operator can audit scope.
+
+**Scope of Rule 4 in this plugin.** This plugin ships no user-invocable mutating skill today. The rule is recorded here so any future skill that walks the workspace honors the same contract as its companion packages. JVM-specific note: a future skill that emits AOT artifacts under `target/` or `classes/` is exempt for the artifact writes themselves (those are build outputs, not source mutation per the existing JVM-specific reflection-and-AOT note), but its source-discovery pass must still honor Rule 4.
 
 ## Classification
 
@@ -135,6 +158,7 @@ When adding or modifying a user-invocable skill, confirm each item before commit
 - [ ] If the skill is pure-report, the suffix signals it (`-review`, `-audit`, `-check`) and the skill has no `--report` flag.
 - [ ] No `## Customization` section.
 - [ ] No `--name` flags other than `--report`. Tool-level flags the skill calls internally (for example, `cljfmt check`, `clj-kondo --lint`, `clojure -T:build`) are not skill flags and do not count.
+- [ ] Mutating skills that walk the workspace include a one-line Rule 4 reference in their `## Mutation` or `## Scope` section. Exempt skills (scaffolding, dependency upgrade, fixed targets, git operations, named paths) carry no reference.
 - [ ] Frontmatter `name` matches the skill's directory name.
 - [ ] OpenCode mirror under `.opencode/skills/<name>/SKILL.md` is byte-identical to the canonical source.
 - [ ] `agents/openai.yaml` `default_prompt` references the current command name.

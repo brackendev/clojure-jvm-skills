@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## 0.1.6 - 2026-05-28
+
+### Added
+
+- `CONVENTIONS.md` gains Rule 4: vendored and generated paths are excluded by default from mutating skills that walk the workspace. The rule sits alongside the existing three rules (renamed from "The three rules" to "The four rules"). Two filters apply together (`.gitignore` matches plus a hardcoded floor of dependency directories, build outputs, and lock files). The override rides on Rule 1's existing `<path>` `<glob>` grammar; no new flag is introduced. This plugin ships no user-invocable mutating skill today, so no SKILL.md changes accompany the rule. The contract is recorded so any future skill that walks the workspace matches its companion packages.
+
 ## 0.1.5 - 2026-05-20
 
 ### Changed
