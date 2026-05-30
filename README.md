@@ -40,6 +40,10 @@ Update later with `apm update [-g]`. Remove with `apm uninstall brackendev/cloju
 - [Clojure CLI](https://clojure.org/guides/install_clojure) and Java 17 or higher.
 - [clojure-skills](https://github.com/brackendev/clojure-skills) installed alongside, for the host-neutral baseline.
 
+## Command guide
+
+This package provides no slash commands. It adds the auto-triggered `clojure-jvm` skill on top of [clojure-skills](https://github.com/brackendev/clojure-skills). For lint, format, test, and smell fixes in JVM Clojure projects, run that package's `/clj-fix` and `/clj-smells-fix`.
+
 ## Skills
 
 ### Auto-triggered
