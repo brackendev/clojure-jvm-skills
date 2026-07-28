@@ -1,33 +1,43 @@
 # Changelog
 
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
 ## [Unreleased]
 
-## 0.1.7 - 2026-06-15
+## [0.1.8] - 2026-07-29
+
+### Removed
+
+- The package manifest no longer declares the top-level `target: all` field. The APM manifest schema deprecates the `all` value: a parser treats the field as though it were absent and falls through to the `--target` flag or filesystem auto-detection, and the value is scheduled to become a hard parse error in a future APM release. Removing the field makes that fall-through behavior permanent. Installation behavior is unchanged, because APM already resolved targets by auto-detection rather than from this field. The separate `compilation.target` setting is not affected.
+
+## [0.1.7] - 2026-06-15
 
 ### Changed
 
 - Add Kiro to the README's runtime list. APM 0.20.0 added Kiro as a first-class install target included in `apm install --target all`, so the README now lists it alongside Claude Code, Codex, OpenCode, Cursor, Copilot, Gemini, and Windsurf.
 
-## 0.1.6 - 2026-05-28
+## [0.1.6] - 2026-05-28
 
 ### Added
 
 - `CONVENTIONS.md` gains Rule 4: vendored and generated paths are excluded by default from mutating skills that walk the workspace. The rule sits alongside the existing three rules (renamed from "The three rules" to "The four rules"). Two filters apply together (`.gitignore` matches plus a hardcoded floor of dependency directories, build outputs, and lock files). The override rides on Rule 1's existing `<path>` `<glob>` grammar; no new flag is introduced. This plugin ships no user-invocable mutating skill today, so no SKILL.md changes accompany the rule. The contract is recorded so any future skill that walks the workspace matches its companion packages.
 
-## 0.1.5 - 2026-05-20
+## [0.1.5] - 2026-05-20
 
 ### Changed
 
 - `CONTRIBUTING.md` Layout table now includes a row for `CONVENTIONS.md`, aligning the package with the family-wide structural template.
 
-## 0.1.4 - 2026-05-20
+## [0.1.4] - 2026-05-20
 
 ### Changed
 
 - Cross-references to `clojure-skills` updated for the `clj-tidy` → `clj-fix` rename in that companion package. The worked examples in `CONVENTIONS.md` now show `/clj-fix` rather than `/clj-tidy`.
 - The `CONVENTIONS.md` command-verb section now lists noun-first command suffixes (`-fix`, `-sync`, `-review`, and the rest) rather than verb-first patterns, reflecting the family's noun-first canonical naming.
 
-## 0.1.3
+## [0.1.3] - 2026-05-19
 
 ### Added
 
@@ -37,19 +47,19 @@
 
 - `CONTRIBUTING.md` now links to `CONVENTIONS.md` from the Skill conventions section.
 
-## 0.1.2
+## [0.1.2] - 2026-05-17
 
 ### Changed
 
 - The `clojure-jvm` `SKILL.md` now references [clojurescript-skills](https://github.com/brackendev/clojurescript-skills) as a published companion. The previous "when published" qualifier has been removed.
 
-## 0.1.1
+## [0.1.1] - 2026-05-17
 
 ### Changed
 
 - Merged the `MCP Integration` section in `references/project-workflows.md` into the `REPL` section. The recovery step (start nREPL with `clj -M:nrepl &` when none is running) now leads the section and is unconditional, so it applies whether or not `clojure-mcp` is in use. The `clojure-mcp` paragraph follows as an enhancement that connects over the running nREPL.
 
-## 0.1.0
+## [0.1.0] - 2026-05-17
 
 ### Added
 
