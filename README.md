@@ -1,6 +1,6 @@
 # clojure-jvm-skills
 
-JVM-specific Clojure skills packaged as an [APM](https://github.com/microsoft/apm) plugin. One install deploys the package to every runtime in APM's default target set: Claude Code, Codex, OpenCode, Cursor, Copilot, Gemini, Windsurf, and Kiro. Antigravity is supported by naming it explicitly with `--target antigravity`.
+JVM-specific Clojure skills packaged as an [APM](https://github.com/microsoft/apm) plugin. One install deploys the package to every runtime in APM's default target set: Claude Code, Codex, OpenCode, Cursor, Copilot, Gemini, Windsurf, Kiro, and Grok Build. Antigravity is supported by naming it explicitly with `--target antigravity`.
 
 Skills follow the [Agent Skills](https://agentskills.io) open standard. The `clojure-jvm` skill auto-triggers from conversation context when JVM-specific Clojure usage appears (Java interop, refs / agents / STM, `with-open`, JVM-typed exceptions, the Clojure CLI, `tools.build`, `clj-kondo`, `cljfmt`, `test-runner`, nREPL, `clojure-mcp`).
 
