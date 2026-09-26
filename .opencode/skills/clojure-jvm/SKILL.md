@@ -26,7 +26,7 @@ ClojureScript and ClojureDart deltas live in their own packages ([clojurescript-
 
 1. **Use `with-open` for resource cleanup.** Not `try`/`finally`. Anything implementing `java.lang.AutoCloseable` or `java.io.Closeable` qualifies.
 2. **Never catch `Throwable`.** Catch specific exception types so `OutOfMemoryError`, `StackOverflowError`, and assertion failures keep propagating.
-3. **Use the auto-generated record factories, not the JVM interop form.** The baseline rule "use `->Foo` constructors" applies; this skill adds the JVM-specific reason: the `(Foo. ...)` interop form bypasses any preprocessing the factory does.
+3. **Use the auto-generated record factories, not the JVM interop form.** The baseline rule "use `->Foo` constructors" applies; this skill adds the JVM-specific reason: `->Foo` is an ordinary first-class function that callers reach through `:require`, while the `(Foo. ...)` interop form is a constructor call on the generated class and needs an `:import`.
 4. **Prefer `swap!` and atom-only patterns when possible; reach for refs and agents only when their coordination semantics are required.** STM is for coordinated multi-identity updates; agents are for asynchronous single-identity updates that can be batched.
 5. **Reuse standard Java exception types when `ex-info` is not the right fit.** `IllegalArgumentException`, `IllegalStateException`, and `UnsupportedOperationException` carry meaning across the JVM ecosystem.
 
@@ -114,12 +114,12 @@ Use `alter-var-root` to rebind a var's root value rather than redefining it:
 (def thing 1)
 (alter-var-root #'thing (constantly nil))
 
-;; bad: leaves stale metadata, breaks anything holding the original var
+;; bad: replaces the var's metadata (docstring, :private) along with its value
 (def thing 1)
 (def thing nil)
 ```
 
-`with-redefs` temporarily rebinds vars in the current thread (and is visible across threads despite that). Use it sparingly and only for external boundaries (HTTP, database, clock). Prefer passing dependencies as function arguments. Multi-threaded test runners can leave permanent damage if two redefs race.
+`with-redefs` temporarily replaces the root values of vars, so the change is visible in every thread while the body runs. Use it sparingly and only for external boundaries (HTTP, database, clock). Prefer passing dependencies as function arguments. Multi-threaded test runners can leave permanent damage if two redefs race.
 
 ## State Management
 

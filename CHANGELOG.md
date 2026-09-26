@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.1.11] - 2026-09-26
+
+### Fixed
+
+- The `clojure-jvm` skill now describes `with-redefs` correctly: it replaces the root values of vars, so the change is visible in every thread, not only the current one.
+- The `clojure-jvm` skill now gives an accurate reason for preferring `alter-var-root` over redefining a var with `def`. Redefinition replaces the var's metadata (docstring, `:private`), and code holding the var still sees the new value.
+- The `clojure-jvm` skill now gives an accurate reason for preferring `->Foo` record factories over the `(Foo. ...)` interop form. The factory is a plain function reached through `:require` and does no extra preprocessing, while the interop form needs an `:import` of the generated class.
+
 ## [0.1.10] - 2026-09-16
 
 ### Changed
