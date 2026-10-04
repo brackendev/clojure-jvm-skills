@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.1.12] - 2026-10-04
+
+### Added
+
+- The `clojure-jvm` skill now covers the Java interop features added in Clojure 1.12. These are qualified methods (`Class/method`, `Class/.method`, `Class/new`) used as values, `:param-tags` (`^[double]`) to resolve overloads without reflection, and array class symbols such as `String/1`. They also include passing Clojure functions where Java expects a functional interface, `IDeref` values as `Supplier`, and the `stream-into!` family for consuming Java streams.
+- The `clojure-jvm` skill now recommends `clojure.java.process` over `clojure.java.shell` for running external commands.
+- The `clojure-jvm` skill's Gotchas section now says to refer to static fields without parentheses (`System/out`, not `(System/out)`), which a future Clojure release will treat as an invocation.
+- The project workflow reference now describes `add-lib`, `add-libs`, and `sync-deps` for loading libraries into a running REPL.
+
+### Changed
+
+- The project workflow reference's `deps.edn` example now uses Clojure 1.12.6, tools.build v0.10.14, and cljfmt 0.16.6.
+- The project workflow reference no longer tells the agent to restart its session after starting an nREPL. It now says to connect to the port written to `.nrepl-port`, and to ask the user when an MCP server must be restarted.
+
 ## [0.1.11] - 2026-09-26
 
 ### Fixed

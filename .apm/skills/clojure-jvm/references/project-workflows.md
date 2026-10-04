@@ -33,7 +33,7 @@ my-project/
 
 ```clojure
 {:paths ["src" "resources"]
- :deps  {org.clojure/clojure {:mvn/version "1.12.0"}}
+ :deps  {org.clojure/clojure {:mvn/version "1.12.6"}}
  :aliases
  {:dev     {:extra-paths ["dev"]
             :extra-deps  {}}
@@ -43,9 +43,9 @@ my-project/
             :main-opts   ["-m" "cognitect.test-runner"]
             :exec-fn     cognitect.test-runner.api/test}
   :build   {:deps        {io.github.clojure/tools.build
-                          {:git/tag "v0.10.5" :git/sha "2a21b7a"}}
+                          {:git/tag "v0.10.14" :git/sha "1176afd"}}
             :ns-default  build}
-  :cljfmt  {:extra-deps  {dev.weavejester/cljfmt {:mvn/version "0.13.0"}}
+  :cljfmt  {:extra-deps  {dev.weavejester/cljfmt {:mvn/version "0.16.6"}}
             :main-opts   ["-m" "cljfmt.main"]}}}
 ```
 
@@ -63,9 +63,19 @@ my-project/
 
 The host-neutral REPL conventions (`(comment ...)` scratchpads, `in-ns`, fully-qualified references across namespaces) and the REPL-driven development principle live in the [clojure](https://github.com/brackendev/clojure-skills) baseline skill. The JVM-specific additions are below.
 
-Connect to a running nREPL when available. If none is running and the project defines an `:nrepl` alias, start one in the background with `clj -M:nrepl &` and restart the session so the editor or MCP server can connect.
+Connect to a running nREPL when available. If none is running and the project defines an `:nrepl` alias, start one in the background with `clj -M:nrepl &`. An nREPL started through `nrepl.cmdline` prints its port and writes it to `.nrepl-port` in the project directory. Connect the editor or MCP server to that port. An agent cannot restart its own session, so when an MCP server must be restarted to pick up the new port, ask the user to restart it.
 
 When [clojure-mcp](https://github.com/bhauman/clojure-mcp) is available, prefer its tools (REPL evaluation, namespace reload, file operations) over shell commands; it connects over the running nREPL.
+
+Clojure 1.12 can add a library to a running REPL without restarting the JVM. In a `clojure.main` REPL these functions are referred into `user` automatically. In other REPLs, `(require '[clojure.repl.deps :refer [add-lib add-libs sync-deps]])` first. Call them from a REPL, not from a script or `-e` expression: they check that `*repl*` is bound to true and need the REPL's dynamic class loader. They call the Clojure CLI to resolve dependencies:
+
+```clojure
+(add-lib 'org.clojure/data.json)                          ; newest release
+(add-lib 'org.clojure/data.json {:mvn/version "2.5.1"})   ; specific version
+(sync-deps)                                               ; load deps.edn libs not yet on the classpath
+```
+
+Use these for exploration only. Record every dependency the project keeps in `deps.edn`.
 
 Reload namespaces with the `:reload` flag to work with the latest code:
 
