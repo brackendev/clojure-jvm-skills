@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.1.13] - 2026-10-17
+
+### Fixed
+
+- `CONTRIBUTING.md` no longer says that omitting `user-invocable` makes a skill model-only. Claude Code defaults `user-invocable` to `true`, so a skill that omits the field also appears as a slash command. A model-only skill sets `user-invocable: false`.
+
 ## [0.1.12] - 2026-10-04
 
 ### Added
