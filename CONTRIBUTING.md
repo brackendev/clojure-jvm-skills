@@ -48,7 +48,7 @@ python3 -c "import yaml, pathlib; [yaml.safe_load(p.read_text()) for p in pathli
 
 Runtime install (requires `apm` and the runtime CLIs you want to verify: `claude`, `codex`, `copilot`, `gemini`, `opencode`):
 
-- Run `apm install`, `apm update`, and `apm uninstall` in a clean temporary project. Pre-create the runtime roots: `.agents/`, `.claude/`, `.cursor/`, `.opencode/`, `.gemini/`, `.github/`, `.windsurf/`.
+- Run `apm install --target all`, `apm update`, and `apm uninstall` in a clean temporary project. Pre-create the runtime roots: `.agents/`, `.claude/`, `.cursor/`, `.opencode/`, `.gemini/`, `.github/`, `.windsurf/`. With several runtime roots present, APM stops with "Multiple harnesses detected" unless the install names a target. `apm update` reuses the targets that the install records in the project's `apm.yml`.
 - Exercise user scope with `apm install brackendev/clojure-jvm-skills -g [--target ...]` and `apm uninstall brackendev/clojure-jvm-skills -g`. A local filesystem path (`apm install /absolute/path -g`) is also accepted.
 - Confirm OpenCode deployment with `opencode --pure debug skill`, which lists deployed skills and their source paths.
 
