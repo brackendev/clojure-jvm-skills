@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.1.16] - 2026-10-24
+
+### Changed
+
+- The `clojure-jvm` project-workflows reference points to the Reflection warnings entry in `SKILL.md` instead of repeating it. That entry says to set `*warn-on-reflection*` at the top of each namespace during development.
+
 ## [0.1.15] - 2026-10-24
 
 ### Removed

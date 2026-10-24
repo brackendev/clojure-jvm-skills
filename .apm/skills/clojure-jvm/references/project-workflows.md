@@ -98,10 +98,4 @@ clj -X:test
 
 ### Reflection warnings
 
-Set `*warn-on-reflection*` at the top of a namespace to surface untyped Java method calls during development:
-
-```clojure
-(set! *warn-on-reflection* true)
-```
-
-Combine with `^Type` hints on parameters and return values to eliminate the warnings.
+The Reflection warnings entry under Gotchas in `SKILL.md` covers `*warn-on-reflection*` and the `^Type` hints that clear its warnings.

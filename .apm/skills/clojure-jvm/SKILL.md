@@ -287,7 +287,7 @@ CLI commands, project layout, `deps.edn` configuration, lint and format tooling,
 
 ### Reflection warnings
 
-`*warn-on-reflection*` is the JVM mechanism that flags untyped Java method calls. Set it once per namespace to surface missing type hints:
+`*warn-on-reflection*` is the JVM mechanism that flags untyped Java method calls. Set it once at the top of each namespace during development to surface missing type hints:
 
 ```clojure
 (set! *warn-on-reflection* true)
