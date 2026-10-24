@@ -93,7 +93,7 @@ The section name `## Customization` is retired.
 
 ## Worked examples
 
-This plugin has no user-invocable skills yet, so the examples below illustrate how the rules apply to JVM Clojure workflows. The named commands (`/clj-fix`, `/clj-new`, `/clj-smells-review`) live today in the companion [clojure-skills](https://github.com/brackendev/clojure-skills) plugin and operate across `.clj`, `.cljs`, `.cljc`, and `.cljd`. If a JVM-only variant of any such workflow lands here in the future, it follows the same shape.
+This plugin has no user-invocable skills yet, so the examples below illustrate how the rules apply to JVM Clojure workflows. The named commands (`/clj-fix`, `/clj-smells-review`) live today in the companion [clojure-skills](https://github.com/brackendev/clojure-skills) plugin and operate across `.clj`, `.cljs`, `.cljc`, and `.cljd`. If a JVM-only variant of any such workflow lands here in the future, it follows the same shape.
 
 ### Mutating pipeline skill with `--report` (model: `/clj-fix`)
 
@@ -109,15 +109,6 @@ This plugin has no user-invocable skills yet, so the examples below illustrate h
 
 The skill writes when the `format` step runs without `--report`. With `--report`, the format step runs `cljfmt check`, which reports diffs without writing. The other three steps (`lint`, `test`, `dry`) are pure-read regardless. The `## Mutation` section in the skill body documents this asymmetry.
 
-### Mutating scaffolding skill, exemption from `all`/path rows (model: `/clj-new`)
-
-```
-/clj-new my-service          # creates project tree at ./my-service
-/clj-new                     # prompts the operator for a project name
-```
-
-`<project-name>` is a required positional argument. The skill omits the `all` and `<path>` rows because they would not be meaningful for scaffolding. It also omits `--report` because preview is meaningless: the operator reads `SKILL.md` to see what files will be written. The exemption is listed below.
-
 ### Pure-report skill (model: `/clj-smells-review`)
 
 ```
@@ -131,7 +122,7 @@ No `--report` flag, because the skill never writes. Operators apply suggestions 
 
 ## Exemptions
 
-No skill in this plugin claims an exemption today. The standard exemption pattern, for reference, is a scaffolding skill (`/clj-new` in the companion `clojure-skills` package) that accepts a required positional `<project-name>` because no useful default exists. Such a skill omits the `all` and `<path>` scope rows and the `--report` flag for the same reason. The `## Arguments` table in its `SKILL.md` documents the positional grammar.
+No skill in this plugin claims an exemption today. The standard exemption pattern, for reference, is a scaffolding skill that accepts a required positional `<project-name>` because no useful default exists. Such a skill omits the `all` and `<path>` scope rows and the `--report` flag for the same reason. The `## Arguments` table in its `SKILL.md` documents the positional grammar.
 
 ## Ambiguity notes
 

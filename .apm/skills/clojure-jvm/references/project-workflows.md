@@ -52,7 +52,7 @@ my-project/
             :main-opts   ["-m" "dry4clj.core"]}}}
 ```
 
-This is the layout `/clj-new` in clojure-skills writes. `dry4clj` is not published to Clojars, so its alias uses a Git coordinate pinned to a commit, and `/clj-fix` uses it for its duplicate-form step.
+These aliases match the steps `/clj-fix` in clojure-skills runs. `dry4clj` is not published to Clojars, so its alias uses a Git coordinate pinned to a commit, and `/clj-fix` uses it for its duplicate-form step.
 
 ## Tooling
 

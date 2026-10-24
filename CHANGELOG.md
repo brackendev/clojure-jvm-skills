@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.1.18] - 2026-10-25
+
+### Changed
+
+- The `clojure-jvm` project workflow reference describes its sample `deps.edn` aliases as the ones `/clj-fix` uses, and `CONVENTIONS.md` no longer cites `/clj-new`, because clojure-skills removed that skill.
+- The Companion packages table describes biff-skills as covering Biff 2 conventions and deployment, because that package no longer scaffolds projects.
+
 ## [0.1.17] - 2026-10-24
 
 ### Added
