@@ -6,6 +6,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.1.17] - 2026-10-24
+
+### Added
+
+- The Companion packages table lists [electric-skills](https://github.com/brackendev/electric-skills), the new companion package for the [Electric](https://github.com/hyperfiddle/electric) v3 full-stack framework, and `CONTRIBUTING.md` cites its Hyperfiddle lavender brand color (`#B7A4C2`).
+
+### Changed
+
+- The Companion packages table names the major version each framework package targets: Biff 2, Electric v3, and Fulcro 3. The skills in those packages do not apply to other major versions.
+- `CONTRIBUTING.md` asks for a changelog entry and a version increment for every change to a published file, including documentation-only changes, which matches the release history. It asked for entries only for user-facing changes.
+- The workflows reference's `deps.edn` example matches the layout `/clj-new` writes, including the `:dry4clj` alias that `/clj-fix` uses.
+- The `add-lib` example in the `clojure-jvm` project workflows reference pins `org.clojure/data.json` 2.5.2, the current release.
+
+### Fixed
+
+- The Companion packages introduction counts seven packages, matching the table. It said five while the table listed six.
+- The `CONTRIBUTING.md` Layout table names the local `AGENTS.md`, `GEMINI.md`, and `TODO.md` files. It named `CLAUDE.md`, which the package does not use.
+
 ## [0.1.16] - 2026-10-24
 
 ### Changed

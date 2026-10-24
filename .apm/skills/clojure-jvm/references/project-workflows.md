@@ -35,8 +35,7 @@ my-project/
 {:paths ["src" "resources"]
  :deps  {org.clojure/clojure {:mvn/version "1.12.6"}}
  :aliases
- {:dev     {:extra-paths ["dev"]
-            :extra-deps  {}}
+ {:dev     {:extra-paths ["dev"]}
   :test    {:extra-paths ["test"]
             :extra-deps  {io.github.cognitect-labs/test-runner
                           {:git/tag "v0.5.1" :git/sha "dfb30dd"}}
@@ -46,8 +45,14 @@ my-project/
                           {:git/tag "v0.10.14" :git/sha "1176afd"}}
             :ns-default  build}
   :cljfmt  {:extra-deps  {dev.weavejester/cljfmt {:mvn/version "0.16.6"}}
-            :main-opts   ["-m" "cljfmt.main"]}}}
+            :main-opts   ["-m" "cljfmt.main"]}
+  :dry4clj {:extra-deps  {io.github.unclebob/dry4clj
+                          {:git/url "https://github.com/unclebob/dry4clj.git"
+                           :git/sha "5994ef2bcaaae8d12bcd0afb4f091ae09083228c"}}
+            :main-opts   ["-m" "dry4clj.core"]}}}
 ```
+
+This is the layout `/clj-new` in clojure-skills writes. `dry4clj` is not published to Clojars, so its alias uses a Git coordinate pinned to a commit, and `/clj-fix` uses it for its duplicate-form step.
 
 ## Tooling
 
@@ -71,7 +76,7 @@ Clojure 1.12 can add a library to a running REPL without restarting the JVM. In 
 
 ```clojure
 (add-lib 'org.clojure/data.json)                          ; newest release
-(add-lib 'org.clojure/data.json {:mvn/version "2.5.1"})   ; specific version
+(add-lib 'org.clojure/data.json {:mvn/version "2.5.2"})   ; specific version
 (sync-deps)                                               ; load deps.edn libs not yet on the classpath
 ```
 
