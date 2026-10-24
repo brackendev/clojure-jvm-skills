@@ -8,8 +8,8 @@ For people working on the plugin source. End-user install instructions live in [
 |------|---------|
 | `apm.yml` | Package manifest (`type: skill`, no MCP dependencies). |
 | `.apm/skills/<name>/` | Canonical skill source. APM deploys from here. Each directory holds `SKILL.md` plus optional `agents/openai.yaml`, `references/`, `scripts/`, `examples/`. |
-| `.opencode/skills/<name>/SKILL.md` | Byte-identical mirror of the canonical `SKILL.md`. Enables local OpenCode validation (`opencode --pure debug skill`). Supporting files are not mirrored. |
-| `opencode.jsonc`, `.opencode/package.json` | Local OpenCode configuration. |
+| `.opencode/skills` | Symlink to `../.apm/skills`. OpenCode finds it from any directory in the repository, so an OpenCode session loads the canonical skills and their supporting files without an APM install. |
+| `opencode.jsonc` | Local OpenCode configuration. |
 | `README.md` | End-user documentation. |
 | `CHANGELOG.md` | User-facing changes per version. |
 | `CONVENTIONS.md` | Canonical argument grammar, scope vocabulary, and mutation defaults for every user-invocable skill. |
@@ -22,18 +22,9 @@ Do not add `.claude-plugin/`, `.codex-plugin/`, `.agents/plugins/marketplace.jso
 ## Adding or modifying a skill
 
 1. Edit `.apm/skills/<name>/SKILL.md`.
-2. Mirror the change to `.opencode/skills/<name>/SKILL.md` (byte-identical).
-3. Update `README.md` if the change is user-facing.
-4. Add a `CHANGELOG.md` entry under `[Unreleased]` for user-facing changes.
-5. Increment the `version` field in `apm.yml`.
-
-Verify the mirror is in sync:
-
-```bash
-for f in .apm/skills/*/SKILL.md; do
-  diff "$f" ".opencode/skills/$(basename "$(dirname "$f")")/SKILL.md" || echo "DIFF: $f"
-done
-```
+2. Update `README.md` if the change is user-facing.
+3. Add a `CHANGELOG.md` entry under `[Unreleased]` for user-facing changes.
+4. Increment the `version` field in `apm.yml`.
 
 ## Validation
 
@@ -41,7 +32,6 @@ Configuration files:
 
 ```bash
 python3 -m json.tool opencode.jsonc >/dev/null
-python3 -m json.tool .opencode/package.json >/dev/null
 python3 -c "import yaml, pathlib; yaml.safe_load(pathlib.Path('apm.yml').read_text())"
 python3 -c "import yaml, pathlib; [yaml.safe_load(p.read_text()) for p in pathlib.Path('.apm/skills').glob('*/agents/openai.yaml')]"
 ```
@@ -50,7 +40,7 @@ Runtime install (requires `apm` and the runtime CLIs you want to verify: `claude
 
 - Run `apm install --target all`, `apm update`, and `apm uninstall` in a clean temporary project. Pre-create the runtime roots: `.agents/`, `.claude/`, `.cursor/`, `.opencode/`, `.gemini/`, `.github/`, `.windsurf/`. With several runtime roots present, APM stops with "Multiple harnesses detected" unless the install names a target. `apm update` reuses the targets that the install records in the project's `apm.yml`.
 - Exercise user scope with `apm install brackendev/clojure-jvm-skills -g [--target ...]` and `apm uninstall brackendev/clojure-jvm-skills -g`. A local filesystem path (`apm install /absolute/path -g`) is also accepted.
-- Confirm OpenCode deployment with `opencode --pure debug skill`, which lists deployed skills and their source paths.
+- Confirm OpenCode deployment from the temporary project with `opencode api GET "/api/skill?location[directory]=$PWD"`, which lists the skills OpenCode discovers and their source paths. The first request for a directory can return an empty list while OpenCode loads the skills, so repeat it before reading the result.
 
 ## Skill conventions
 

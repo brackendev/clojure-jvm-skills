@@ -160,6 +160,5 @@ When adding or modifying a user-invocable skill, confirm each item before commit
 - [ ] No `--name` flags other than `--report`. Tool-level flags the skill calls internally (for example, `cljfmt check`, `clj-kondo --lint`, `clojure -T:build`) are not skill flags and do not count.
 - [ ] Mutating skills that walk the workspace include a one-line Rule 4 reference in their `## Mutation` or `## Scope` section. Exempt skills (scaffolding, dependency upgrade, fixed targets, git operations, named paths) carry no reference.
 - [ ] Frontmatter `name` matches the skill's directory name.
-- [ ] OpenCode mirror under `.opencode/skills/<name>/SKILL.md` is byte-identical to the canonical source.
 - [ ] `agents/openai.yaml` `default_prompt` references the current command name.
 - [ ] `CHANGELOG.md` records the change under `[Unreleased]` when the change is user-facing.
