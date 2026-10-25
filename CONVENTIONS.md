@@ -4,7 +4,7 @@ This document defines the argument grammar, scope vocabulary, and mutation defau
 
 These conventions apply to user-invocable skills (`user-invocable: true` in frontmatter). Model-invocable reference skills with no argument surface (currently the only skill in this plugin, `clojure-jvm`) carry no argument grammar and are exempt from rules 1 and 2.
 
-This plugin ships no user-invocable skill today. The rules below define the contract that any future user-invocable JVM Clojure skill will honor, and the contract that a reader who learned the standard from a companion package ([clojure-skills](https://github.com/brackendev/clojure-skills), [clojurescript-skills](https://github.com/brackendev/clojurescript-skills), [clojuredart-skills](https://github.com/brackendev/clojuredart-skills), [biff-skills](https://github.com/brackendev/biff-skills), [fulcro-skills](https://github.com/brackendev/fulcro-skills)) can expect to apply here.
+This plugin ships no user-invocable skill today. The rules below define the contract that any future user-invocable JVM Clojure skill will honor, and the contract that a reader who learned the standard from a companion package ([clojure-skills](https://github.com/brackendev/clojure-skills), [clojurescript-skills](https://github.com/brackendev/clojurescript-skills), [clojuredart-skills](https://github.com/brackendev/clojuredart-skills), [biff-skills](https://github.com/brackendev/biff-skills), [electric-skills](https://github.com/brackendev/electric-skills), [fulcro-skills](https://github.com/brackendev/fulcro-skills)) can expect to apply here.
 
 ## The four rules
 
@@ -93,32 +93,34 @@ The section name `## Customization` is retired.
 
 ## Worked examples
 
-This plugin has no user-invocable skills yet, so the examples below illustrate how the rules apply to JVM Clojure workflows. The named commands (`/clj-fix`, `/clj-smells-review`) live today in the companion [clojure-skills](https://github.com/brackendev/clojure-skills) plugin and operate across `.clj`, `.cljs`, `.cljc`, and `.cljd`. If a JVM-only variant of any such workflow lands here in the future, it follows the same shape.
+This plugin has no user-invocable skills yet, so the examples below illustrate how the rules apply to JVM Clojure workflows. The named commands (`/clj-fix`, `/clj-smells-fix`) live today in the companion [clojure-skills](https://github.com/brackendev/clojure-skills) plugin and operate across `.clj`, `.cljs`, `.cljc`, and `.cljd`. If a JVM-only variant of any such workflow lands here in the future, it follows the same shape.
 
 ### Mutating pipeline skill with `--report` (model: `/clj-fix`)
 
 ```
-/clj-fix                    # all four steps; format writes
-/clj-fix lint               # lint only (pure-read; no writes anywhere)
+/clj-fix                    # all four steps; lint and format write
+/clj-fix lint               # lint step; applies safe mechanical fixes
 /clj-fix format             # format step; writes via cljfmt fix
 /clj-fix lint test          # combined step keywords
-/clj-fix --report           # all four steps; format reads via cljfmt check
+/clj-fix --report           # all four steps; --report disables all writes
 /clj-fix format --report    # format step; no writes
 /clj-fix all                # synonym for (no argument)
 ```
 
-The skill writes when the `format` step runs without `--report`. With `--report`, the format step runs `cljfmt check`, which reports diffs without writing. The other three steps (`lint`, `test`, `dry`) are pure-read regardless. The `## Mutation` section in the skill body documents this asymmetry.
+The skill writes when the `lint` or `format` step runs without `--report`. The `format` step runs `cljfmt fix`, and the `lint` step applies the safe mechanical fixes that `/clj-smells-fix` owns. With `--report`, both steps report their changes without writing, and the format step runs `cljfmt check`. The `test` and `dry` steps are pure-read regardless. The `## Mutation` section in the skill body documents which steps write.
 
-### Pure-report skill (model: `/clj-smells-review`)
+### Mutating review skill with `--report` (model: `/clj-smells-fix`)
 
 ```
-/clj-smells-review                       # review changed files
-/clj-smells-review src/api               # review files under directory
-/clj-smells-review src/api/auth.clj      # review specific file
-/clj-smells-review all                   # review the full codebase
+/clj-smells-fix                         # fix changed files and report the findings it does not apply
+/clj-smells-fix src/api                 # fix files under directory
+/clj-smells-fix src/api/auth.clj        # fix specific file
+/clj-smells-fix all                     # fix the full codebase
+/clj-smells-fix --report                # report only; no writes
+/clj-smells-fix src/api --report        # report only on the given path
 ```
 
-No `--report` flag, because the skill never writes. Operators apply suggestions themselves.
+The skill applies only the findings inside its documented safety band and reports the rest as suggestions. With `--report`, it reports every finding without writing.
 
 ## Exemptions
 

@@ -38,7 +38,7 @@ Update later with `apm update [-g]`. Remove with `apm uninstall brackendev/cloju
 
 ## Requirements
 
-- [Clojure CLI](https://clojure.org/guides/install_clojure) and Java 17 or higher.
+- [Clojure CLI](https://clojure.org/guides/install_clojure) and Java 8 or higher, the minimum that Clojure and the Clojure CLI document. [clojure-mcp](https://github.com/bhauman/clojure-mcp), which the skill uses when it is configured, needs Java 17 or higher.
 - [clojure-skills](https://github.com/brackendev/clojure-skills) installed alongside, for the host-neutral baseline.
 - [Babashka](https://babashka.org) (`bb`) to run the `failure-hints` hook. Without it, the hook does nothing and prints a notice on standard error.
 
@@ -64,7 +64,7 @@ The package includes one hook, `failure-hints`. When a `clj`, `clojure`, or `lei
 - A classpath error names the namespace file that the command's classpath is missing and what to check.
 - When the output names a "Full report at" file, the hint says what that report holds.
 
-The hook reads the output of a command that fails and of a command whose pipeline succeeds, such as `clj ... 2>&1 | tee error.log`, so saving the output to a log file does not hide the error. Each hint appears once per session for the same command and error. When the same command fails the same way again, the hook says so instead of repeating the hint, so the agent changes its approach rather than rerunning the command. A command that only prints or searches error text, such as `cat` or `grep`, gets no hint, and output without one of these errors, such as a failing test assertion, gets none either. The hint points to the `clojure-debug` skill from clojure-skills for the full procedure.
+The hook reads the output of a command that fails and of a command whose pipeline succeeds, such as `clojure ... 2>&1 | tee error.log`, so saving the output to a log file does not hide the error. Each hint appears once per session for the same command and error. When the same command fails the same way again, the hook says so instead of repeating the hint, so the agent changes its approach rather than rerunning the command. A command that only prints or searches error text, such as `cat` or `grep`, gets no hint, and output without one of these errors, such as a failing test assertion, gets none either. The hint points to the `clojure-debug` skill from clojure-skills for the full procedure.
 
 The hook has been run only under Claude Code, where it registers `PostToolUse` and `PostToolUseFailure`. The package ships empty Copilot and Cursor hook files, so APM writes no Copilot hook and no native Cursor hook. In a trusted folder Copilot CLI also runs the Claude Code copy, and the script recognizes Copilot's input there and does nothing. Cursor can read the Claude Code copy through its import of Claude Code settings, which has not been tested. APM installs the generic copy for Codex, Gemini CLI, Kiro, and Windsurf, and the script acts only on Claude Code's input and event names, so it is expected to do nothing there. Gemini CLI does not know the `PostToolUseFailure` event and prints a warning at startup that it skips it. OpenCode and Grok Build have no hook support.
 

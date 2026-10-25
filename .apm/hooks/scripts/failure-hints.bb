@@ -6,7 +6,7 @@
 ;; Shipped as an APM hook primitive. APM registers it for PostToolUse and
 ;; PostToolUseFailure with the matcher "*". Claude Code sends a command that
 ;; exits with a nonzero status to PostToolUseFailure, with its output in
-;; `error`. A command whose pipeline exits 0, such as `clj ... 2>&1 | tee
+;; `error`. A command whose pipeline exits 0, such as `clojure ... 2>&1 | tee
 ;; log`, goes to PostToolUse with its output in tool_response.stdout and
 ;; tool_response.stderr, so the script reads both events.
 ;;
@@ -25,7 +25,7 @@
 
 (def clojure-commands #{"clj" "clojure" "lein"})
 
-;; Words that run the command after them, such as `time clj ...`.
+;; Words that run the command after them, such as `time clojure ...`.
 (def wrappers #{"time" "env" "nice" "command" "exec" "timeout" "nohup"})
 
 ;; Input
@@ -88,7 +88,8 @@
   (when-let [[_ path] (re-find #"Could not locate (\S+?)__init\.class, \S+ or \S+ on classpath" output)]
     (str "The namespace file " path ".clj or " path ".cljc is not on this command's classpath. "
          "Check that the ns name matches the file path (hyphens in the namespace become underscores in the file name), "
-         "that the aliases in this command add the directory that holds it, and the dependency coordinate if it comes from a library.")))
+         "that the command's classpath includes the directory that holds it (:paths and the command's aliases in deps.edn, or :source-paths and the active profiles in project.clj), "
+         "and the dependency coordinate if it comes from a library.")))
 
 (defn report-hint [output]
   (when-let [[_ path] (re-find #"Full report at:\s*\n\s*(\S+\.edn)" output)]

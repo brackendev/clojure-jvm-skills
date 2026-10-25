@@ -67,7 +67,7 @@ Use `send` for CPU-bound actions (fixed thread pool). Use `send-off` for actions
 
 ### Exiting after futures and agents (Iron Law JVM-5)
 
-clojure.org: "use of Agents starts a pool of non-daemon background threads that will prevent shutdown of the JVM. Use shutdown-agents to terminate these threads and allow shutdown." `future`, `pmap`, and `send-off` use a cached pool whose idle threads end after 60 seconds, so a `-main` that dereferenced one `future` took about 60 seconds to exit in a test with Clojure 1.12. `send` uses a fixed pool whose threads never end, so after a `send` the JVM does not exit on its own:
+clojure.org: "use of Agents starts a pool of non-daemon background threads that will prevent shutdown of the JVM. Use shutdown-agents to terminate these threads and allow shutdown." `future`, `pmap`, and `send-off` use a cached pool whose idle threads end after 60 seconds, so a program that dereferenced one `future` took about 60 seconds to exit in a test with Clojure 1.12.6. `send` uses a fixed pool whose threads never end, so after a `send` the JVM does not exit on its own:
 
 ```clojure
 ;; good: the program exits as soon as -main returns
@@ -76,7 +76,7 @@ clojure.org: "use of Agents starts a pool of non-daemon background threads that 
   (shutdown-agents))
 ```
 
-Call `shutdown-agents` only when the program is finishing. Running actions complete, but no new actions are accepted: a new `future` throws `RejectedExecutionException`, and a new `send` returns normally while its action never runs. `clj -X` runs `future` and `send-off` work on daemon threads, but a `send` still keeps the JVM running.
+Call `shutdown-agents` only when the program is finishing. Running actions complete, but no new actions are accepted: a new `future` throws `RejectedExecutionException`, and a new `send` returns normally while its action never runs. `clojure -X` runs `future` and `send-off` work on daemon threads, but a `send` still keeps the JVM running.
 
 ### Exceptions in futures (Iron Law JVM-6)
 
@@ -96,7 +96,7 @@ Agents behave similarly: clojure.org says an exception in an agent action "will 
 
 ### core.async go blocks (Iron Law JVM-4)
 
-`go` runs its body on a small fixed pool of threads and parks, rather than blocks, at `<!`, `>!`, and `alt!`. The `go` docstring says go blocks "should not (either directly or indirectly) perform operations that may block indefinitely," which includes the core.async operations ending in `!!` and blocking I/O, because they can deplete the pool and stop every go block:
+`go` parks, rather than blocks, at `<!`, `>!`, and `alt!`, and its body resumes on a core.async dispatch thread. The `go` docstring says go blocks "should not (either directly or indirectly) perform operations that may block indefinitely," which includes the core.async operations ending in `!!` and blocking I/O. A blocking call holds the dispatch thread for as long as it blocks. The default dispatch threads in core.async 1.9.865 come from an unbounded cached pool, so each blocked go block adds a thread. An executor supplied through the `clojure.core.async.executor-factory` property can be bounded, and blocked go blocks then stop the others:
 
 ```clojure
 ;; bad: blocks a go thread
@@ -107,9 +107,9 @@ Agents behave similarly: clojure.org says an exception in an agent action "will 
             (async/<! (async/io-thread (save-to-db! v)))))
 ```
 
-`io-thread` (core.async 1.9 and later) "may do blocking I/O but must not do extended computation," and it uses a virtual thread when one is available. On earlier core.async versions, or for work that mixes I/O and computation, use `async/thread`.
+`io-thread` "may do blocking I/O but must not do extended computation," and it runs on a virtual thread when the JVM provides them (JDK 21 and later) and on an ordinary thread otherwise. For work that mixes I/O and computation, use `async/thread`.
 
-In development, set the Java system property `clojure.core.async.go-checking` to `true`. core.async's own blocking operations, such as `<!!` and `>!!`, then check whether they run on a go block thread. The check does not cover other blocking I/O.
+In development, set the Java system property `clojure.core.async.go-checking` to `true`. core.async's own blocking operations (`<!!`, `>!!`, and `alts!!`) then throw `IllegalStateException` ("Invalid blocking call in dispatch thread") when they run on a go block thread. The exception goes to the thread's uncaught exception handler, not to the caller. core.async reads the property once, when `clojure.core.async` loads, so set it on the JVM command line, for example `clojure -J-Dclojure.core.async.go-checking=true -M:nrepl`, or with `:jvm-opts` in a `:dev` alias. The check does not cover other blocking I/O.
 
 ### `io!` macro
 

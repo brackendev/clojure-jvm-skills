@@ -9,16 +9,18 @@ Use sugared syntax:
 ```clojure
 ;; good
 (java.util.ArrayList. 100)
-(Math/pow 2 10)
+(System/getProperty "user.home")
 (.substring "hello" 1 3)
 Integer/MAX_VALUE
 
 ;; bad
 (new java.util.ArrayList 100)
-(. Math pow 2 10)
+(. System getProperty "user.home")
 (. "hello" substring 1 3)
 (. Integer MAX_VALUE)
 ```
+
+For `java.lang.Math` functions, prefer `clojure.math` (alias `math`), as in `(math/pow 2 10)`. Its functions wrap `java.lang.Math` with only `long` and `double` overloads, so calls compile without reflection.
 
 The `(:import ...)` clause in `ns` is the JVM-only counterpart to `(:require ...)`. Group it after `(:require ...)`:
 
@@ -34,21 +36,23 @@ The `(:import ...)` clause in `ns` is the JVM-only counterpart to `(:require ...
 
 ### Qualified methods and method values
 
-Clojure 1.12 added qualified method symbols. `Classname/method` names a static method, `Classname/.method` names an instance method, and `Classname/new` names a constructor. Use them to pass a Java method to a higher-order function instead of wrapping it in an anonymous function:
+Qualified method symbols name Java members as values. `Classname/method` names a static method, `Classname/.method` names an instance method, and `Classname/new` names a constructor. Use them to pass a Java method to a higher-order function instead of wrapping it in an anonymous function:
 
 ```clojure
 ;; good
 (map String/.toUpperCase names)
-(map Long/parseLong ids)
+(map Instant/ofEpochMilli timestamps)
 
 ;; bad: hand-written wrappers around Java methods
 (map #(.toUpperCase ^String %) names)
-(map #(Long/parseLong %) ids)
+(map #(Instant/ofEpochMilli %) timestamps)
 ```
 
-The qualifying class also acts as the type hint, so `(String/.length s)` compiles without reflection even when `s` has no hint. The dot forms in the previous section remain correct in invocation position. Reach for qualified methods when the method is used as a value or when the class is otherwise unknown to the compiler.
+To parse numbers from text, use `parse-long` and `parse-double`, which return `nil` on bad input, rather than `Long/parseLong`, which throws. `references/numbers.md` covers parsing at a boundary.
 
-A method value cannot choose between overloads by itself, and the compiler falls back to reflection. Add `:param-tags` with the `^[...]` reader syntax to select one signature. Use `_` for a parameter whose type does not need to be specified:
+The qualifying class also acts as the type hint, so `(String/.length s)` compiles without reflection even when `s` has no hint. The dot forms in the previous section are also correct in invocation position. Reach for qualified methods when the method is used as a value or when the class is otherwise unknown to the compiler.
+
+A method value cannot choose between overloads by itself, and the compiler falls back to reflection. Add `:param-tags` with the `^[...]` reader syntax to select one signature. Use `_` for a parameter whose type does not need to be specified. The compiler ignores `:param-tags` on unqualified `.method` forms, so put them on the qualified symbol:
 
 ```clojure
 ;; good: resolves Math/abs(double) at compile time
@@ -58,7 +62,7 @@ A method value cannot choose between overloads by itself, and the compiler falls
 (map Math/abs readings)
 ```
 
-Array classes have symbol syntax: `String/1` is a one-dimensional `String` array and `long/2` is a two-dimensional `long` array. Use it for type hints and class values instead of the older string form:
+Array classes have symbol syntax: `String/1` is a one-dimensional `String` array and `long/2` is a two-dimensional `long` array. Use it for type hints and class values instead of the JVM descriptor string form:
 
 ```clojure
 ;; good
@@ -70,7 +74,7 @@ Array classes have symbol syntax: `String/1` is a one-dimensional `String` array
 
 ### Functional interfaces, suppliers, and streams
 
-Since Clojure 1.12, a Clojure function can be passed directly to a Java method that expects a functional interface (`Predicate`, `Function`, `Runnable`, and so on). The compiler builds the adapter. Do not write a `reify` for it:
+A Clojure function can be passed directly to a Java method that expects a functional interface (`Predicate`, `Function`, `Runnable`, and so on). The compiler builds the adapter. Do not write a `reify` for it:
 
 ```clojure
 ;; good
@@ -94,10 +98,19 @@ Consume a `java.util.stream.Stream` with `stream-seq!`, `stream-reduce!`, `strea
 
 ### External processes
 
-Use `clojure.java.process` (Clojure 1.12+) to run external commands. `exec` returns the captured standard output, and throws when the process exits with a nonzero status. `start` returns the `java.lang.Process` for full control over its streams. Prefer it over `clojure.java.shell` in new code.
+Use `clojure.java.process` to run external commands. `exec` returns the captured standard output, and throws `RuntimeException` ("Process failed with exit=N") when the process exits with a nonzero status. By default `exec` sends the child's standard error to the parent's standard error, so pass `{:err :stdout}` as the first argument to capture both streams. The exception carries only the exit status, so the output of a failing command is lost, even with `{:err :stdout}`. When the caller needs that output, use `start`, which returns the `java.lang.Process`, and read its streams. Prefer `clojure.java.process` over `clojure.java.shell` in new code. The Clojure 1.12 release notes call it "easier to use."
 
 ```clojure
 (require '[clojure.java.process :as process])
 
 (process/exec "git" "rev-parse" "HEAD")
+
+;; keep the output and the exit status of a command that can fail
+(let [proc (process/start {:err :stdout} "ls" "no-such-file")
+      output (slurp (process/stdout proc))
+      exit @(process/exit-ref proc)]
+  {:exit exit :output output})
+;; => {:exit 1, :output "ls: no-such-file: No such file or directory\n"}
 ```
+
+Pass each argument as a separate string, never a command joined from input. `references/untrusted-input.md` covers command injection, `sh -c`, and `babashka.process`.

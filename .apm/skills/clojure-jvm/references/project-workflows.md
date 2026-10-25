@@ -1,16 +1,20 @@
 # JVM Clojure Project Workflows
 
-Reference for the Clojure CLI, project structure, `deps.edn` configuration, lint and format tooling, the test-runner workflow, and the JVM REPL workflow (nREPL, `clojure-mcp`).
+Reference for the Clojure CLI, project structure, `deps.edn` configuration, lint and format tooling, the test-runner workflow, and the JVM REPL workflow (starting nREPL, `add-lib`, and running tests from the REPL).
 
 ## CLI
 
 ```bash
-clj                          # Start a REPL
-clj -M:alias                 # Run with alias
-clj -X:alias fn-name         # Execute a function
-clj -T:build task            # Run a tools.build task
-clj -Sdeps '{:deps {...}}'   # Add inline dependencies
+clojure -M:alias                 # Run with an alias
+clojure -X:alias fn-name         # Execute a function
+clojure -T:build task            # Run a tools.build task
+clj                              # Start an interactive REPL
+clj -Sdeps '{:deps {...}}'       # Start an interactive REPL with inline dependencies
 ```
+
+### `clojure` and `clj`
+
+Run every command the agent issues with `clojure`, including tests, builds, formatters, and background servers. `clj` runs `clojure` through `rlwrap`, which adds line editing for a person typing at an interactive REPL, and the two accept the same arguments. When `rlwrap` is missing, `clj` prints "Please install rlwrap for command editing or use "clojure" instead." and exits with status 1. Keep `clj` for instructions in which a person starts an interactive REPL at a terminal.
 
 ## Project Structure
 
@@ -44,8 +48,8 @@ my-project/
   :build   {:deps        {io.github.clojure/tools.build
                           {:git/tag "v0.10.14" :git/sha "1176afd"}}
             :ns-default  build}
-  :cljfmt  {:extra-deps  {dev.weavejester/cljfmt {:mvn/version "0.16.6"}}
-            :main-opts   ["-m" "cljfmt.main"]}
+  :cljfmt  {:replace-deps {dev.weavejester/cljfmt {:mvn/version "0.16.6"}}
+            :main-opts    ["-m" "cljfmt.main"]}
   :dry4clj {:extra-deps  {io.github.unclebob/dry4clj
                           {:git/url "https://github.com/unclebob/dry4clj.git"
                            :git/sha "5994ef2bcaaae8d12bcd0afb4f091ae09083228c"}}
@@ -58,21 +62,32 @@ These aliases match the steps `/clj-fix` in clojure-skills runs. `dry4clj` is no
 
 | Tool | Command | Purpose |
 |------|---------|---------|
-| Clojure CLI | `clj` | REPL, run, execute |
-| tools.build | `clj -T:build task` | Build tasks (uberjar, etc.) |
+| Clojure CLI | `clojure` (`clj` when a person starts an interactive REPL) | Run, execute, REPL |
+| tools.build | `clojure -T:build task` | Build tasks (uberjar, etc.) |
 | clj-kondo | `clj-kondo --lint src` | Lint `.clj` files |
-| cljfmt | `clj -M:cljfmt fix` | Format `.clj` files |
-| test-runner | `clj -X:test` | Run tests |
+| cljfmt | `clojure -M:cljfmt fix` | Format `.clj` files |
+| test-runner | `clojure -X:test` | Run tests |
+
+Run the test command the project defines. Kaocha's documented setup (a `tests.edn` file and a `bin/kaocha` script) defines `:test` with `:main-opts ["-m" "kaocha.runner"]` and no `:exec-fn`, so run `bin/kaocha` or `clojure -M:test` in such a project. `clojure -X:test` fails there with "No function found on command line or in :exec-fn".
 
 ## REPL
 
-The host-neutral REPL conventions (`(comment ...)` scratchpads, `in-ns`, fully-qualified references across namespaces) and the REPL-driven development principle live in the [clojure](https://github.com/brackendev/clojure-skills) baseline skill. The JVM-specific additions are below.
+The [clojure](https://github.com/brackendev/clojure-skills) baseline skill holds the host-neutral REPL conventions (`(comment ...)` scratchpads, `in-ns`, fully qualified references across namespaces) and the REPL-driven development principle. The `clojure-repl` skill in clojure-skills covers finding and verifying a running REPL, choosing a client such as clojure-mcp, evaluating with bounded output, and reloading a changed namespace with `:reload`. The JVM-specific additions are below.
 
-Connect to a running nREPL when available. If none is running and the project defines an `:nrepl` alias, start one in the background with `clj -M:nrepl &`. An nREPL started through `nrepl.cmdline` prints its port and writes it to `.nrepl-port` in the project directory. Connect the editor or MCP server to that port. An agent cannot restart its own session, so when an MCP server must be restarted to pick up the new port, ask the user to restart it.
+### Starting nREPL
 
-When [clojure-mcp](https://github.com/bhauman/clojure-mcp) is available, prefer its tools (REPL evaluation, namespace reload, file operations) over shell commands; it connects over the running nREPL.
+Connect to a running nREPL when available. If none is running and the project defines an `:nrepl` alias, start one in the background with `clojure -M:nrepl &` from the project root. A project without one can add an alias built from the nREPL documentation's `deps.edn` example:
 
-Clojure 1.12 can add a library to a running REPL without restarting the JVM. In a `clojure.main` REPL these functions are referred into `user` automatically. In other REPLs, `(require '[clojure.repl.deps :refer [add-lib add-libs sync-deps]])` first. Call them from a REPL, not from a script or `-e` expression: they check that `*repl*` is bound to true and need the REPL's dynamic class loader. They call the Clojure CLI to resolve dependencies:
+```clojure
+:nrepl {:extra-deps {nrepl/nrepl {:mvn/version "1.8.0"}}
+        :main-opts  ["-m" "nrepl.cmdline"]}
+```
+
+In a Leiningen project, `lein repl :headless` starts an nREPL server. Both print the port and write it to `.nrepl-port` in the directory where they start. The `clojure-repl` skill covers how clients such as clojure-mcp find that port.
+
+### Adding a library without a restart
+
+Clojure can add a library to a running REPL without restarting the JVM. In a `clojure.main` REPL these functions are referred into `user` automatically. In other REPLs, `(require '[clojure.repl.deps :refer [add-lib add-libs sync-deps]])` first. Call them from a REPL, not from a script or `-e` expression: they check that `*repl*` is bound to true and need the REPL's dynamic class loader. They call the Clojure CLI to resolve dependencies:
 
 ```clojure
 (add-lib 'org.clojure/data.json)                          ; newest release
@@ -82,24 +97,18 @@ Clojure 1.12 can add a library to a running REPL without restarting the JVM. In 
 
 Use these for exploration only. Record every dependency the project keeps in `deps.edn`.
 
-Reload namespaces with the `:reload` flag to work with the latest code:
+### Running tests from the REPL
+
+After editing source, reload the changed namespace together with its test namespace, then run the tests. Reloading only the test namespace keeps the old definitions of the code under test, so the tests still run against the code from before the edit:
 
 ```clojure
-(require '[my-app.core] :reload)
-```
-
-Reload namespaces before running tests:
-
-```clojure
-(require '[my-app.core-test] :reload)
+(require 'my-app.core 'my-app.core-test :reload)
 (clojure.test/run-tests 'my-app.core-test)
 ```
 
-For full test suite runs, prefer the CLI:
+`:reload-all` reloads the test namespace and every namespace it requires, including libraries such as `clojure.test` and `clojure.string`, so name the changed namespaces with `:reload` instead.
 
-```bash
-clj -X:test
-```
+Run the full suite with the project's own test command (see Tooling) in a new process, which also catches definitions that exist only in the REPL.
 
 ### Reflection warnings
 

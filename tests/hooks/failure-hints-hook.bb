@@ -31,6 +31,12 @@
        "Could not locate app/nope__init.class, app/nope.clj or app/nope.cljc on classpath.\n"))
 (def test-failure "FAIL in (adds-test) (core_test.clj:7)\nexpected: (= 4 (add 2 3))\n  actual: (not (= 4 5))\n")
 
+;; Output recorded from `lein run -m app.nope` with Leiningen 2.13.0.
+(def lein-classpath-error
+  (str "Can't find 'app.nope' as .class or .clj for lein run: please check the spelling.\n"
+       "Execution error (FileNotFoundException) at user/eval138$fn (form-init8640735091224983763.clj:1).\n"
+       "Could not locate app/nope__init.class, app/nope.clj or app/nope.cljc on classpath.\n"))
+
 (defn run
   "Runs the hook. Returns {:exit :event :context :raw} from its output."
   [input & opts]
@@ -73,6 +79,9 @@
 (support/check (some-> (context "PostToolUseFailure" "clj -M -e \"(require 'app.nope)\"" classpath-error)
                        (str/includes? "app/nope.clj or app/nope.cljc is not on this command's classpath"))
                "classpath error: hint names the file")
+(support/check (some-> (context "PostToolUseFailure" "lein run -m app.nope" lein-classpath-error)
+                       (str/includes? ":source-paths and the active profiles in project.clj"))
+               "classpath error from Leiningen: hint names the project.clj source paths")
 
 ;; Wrappers and command lists still count as running the Clojure CLI.
 (doseq [command ["timeout 60 clj -M:test" "cd app && clojure -M -m app.main" "lein test"

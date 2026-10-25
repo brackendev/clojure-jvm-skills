@@ -6,6 +6,38 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.1.21] - 2026-10-25
+
+### Added
+
+- The `clojure-jvm` skill has a new untrusted input reference. It shows how to pass SQL values as next.jdbc parameters and map a user-chosen column or sort direction through an allowlist, why a HoneySQL keyword must never come from input, and how to run external commands with separate arguments through `clojure.java.process`, `clojure.java.shell`, and `babashka.process`, which splits its first string argument on spaces. It also covers reading untrusted EDN with `clojure.edn` and its `:readers` and `:default` options, and why binding `*read-eval*` to false does not make `clojure.core/read-string` safe.
+- The `clojure-jvm` skill has a new numbers reference. It covers `BigDecimal` and the `M` literal, how one double operand turns a result into a double, `with-precision` and the rounding modes, rounding money with `.setScale`, keeping money in `BigDecimal` from parsing to storage, `parse-long` and `parse-double` at a boundary, and long overflow, including the `*unchecked-math*` setting that turns off overflow checks.
+- The resource reference shows how a lazy sequence such as `line-seq` that is returned from `with-open` fails with "Stream closed" when it is read, why a test that reads only the first line still passes, and how to realize or reduce the result inside the block.
+- The project workflows reference gives an `:nrepl` alias for `deps.edn` with nREPL 1.8.0 and names `lein repl :headless` for Leiningen projects. It also says to run the tests of a project set up as Kaocha documents with `bin/kaocha` or `clojure -M:test`, because `clojure -X:test` fails in such a project.
+- The debugging reference shows how to print the full error report to standard error with `--report stderr`, and it covers the `Unexpected error (Type) macroexpanding` and `Syntax error (Type) compiling` first lines.
+- The interop reference recommends `clojure.math` for `java.lang.Math` functions and notes that the compiler ignores `:param-tags` on unqualified `.method` forms. It says that `clojure.java.process/exec` sends standard error to the parent process unless the call passes `{:err :stdout}`, and that a failing `exec` call discards the output it captured, so it shows how to keep that output with `start`.
+- The state reference explains how to set the `clojure.core.async.go-checking` property and where its exception goes.
+
+### Changed
+
+- The `clojure-jvm` skill describes only the current Clojure and core.async releases. Version labels such as "Clojure 1.12 added" and "core.async 1.9 and later" are gone, along with the guidance for earlier core.async versions.
+- The skill runs every command with `clojure` and keeps `clj` only for a person who starts an interactive REPL, because `clj` exits with an error when `rlwrap` is not installed. The project workflows reference explains the difference in its `clojure` and `clj` section.
+- The project workflows reference leaves clojure-mcp, finding the nREPL port, and reloading with `:reload` to the `clojure-repl` skill in clojure-skills, and keeps the JVM-specific parts: starting nREPL, adding a library with `add-lib`, and running tests from the REPL.
+- The interop reference shows method values with `Instant/ofEpochMilli` instead of `Long/parseLong`, and it points to `parse-long` and `parse-double` for parsing text, because they return `nil` on bad input instead of throwing.
+- The `failure-hints` classpath hint names the `project.clj` source paths and profiles as well as the `deps.edn` paths and aliases, so the hint also fits Leiningen commands.
+- `CONVENTIONS.md` lists electric-skills among the companion packages, and its worked examples match the current clojure-skills commands: `/clj-smells-fix` replaces `/clj-smells-review`, and the `/clj-fix` lint step writes fixes unless `--report` is given.
+- The `:cljfmt` alias in the `deps.edn` example uses `:replace-deps`, as the clojure-skills fix skills do, so cljfmt runs with only its own dependencies and does not fail when the project pins a conflicting library or an unresolvable local dependency.
+
+### Fixed
+
+- The `clojure-jvm` skill description fits within the 1,024-character limit that the Agent Skills specification sets for `description`. It was longer. The trigger terms are unchanged, and only the closing summary of the covered topics is shorter.
+- The REPL test example reloads the changed source namespace together with the test namespace. It reloaded only the test namespace, so the tests ran against the code from before the edit. For a full test run, the reference names the project's own test command instead of `clj -X:test`, which fails in a Kaocha project.
+- The README states the Java requirement as Java 8 or higher, the minimum that Clojure and the Clojure CLI document, and says that clojure-mcp needs Java 17 or higher. It said Java 17 or higher for the whole package.
+- The state reference no longer says that go blocks run on a small fixed pool. In core.async 1.9.865 the default dispatch pool grows without a limit, so a blocking call in a `go` block adds a thread, and it stops other go blocks only when the application supplies a bounded executor. Iron Law JVM-4 quotes the rule from the `go` docstring without the fixed-pool claim.
+- The resource reference says that `ExecutorService` has a `close` method only on JDK 19 and later, and that closing it runs the tasks already submitted before it returns. It said that closing an executor waits for its running tasks on any JDK.
+- The single-segment namespace gotcha gives the actual JVM problem: AOT compilation puts the classes in the unnamed Java package, which Java code in a named package cannot import.
+- Key Rule 2 describes refs and agents with the clojure.org wording. It said that agents batch updates.
+
 ## [0.1.20] - 2026-10-25
 
 ### Added
