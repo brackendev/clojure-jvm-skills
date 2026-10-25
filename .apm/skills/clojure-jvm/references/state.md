@@ -65,6 +65,52 @@ Use `send` for CPU-bound actions (fixed thread pool). Use `send-off` for actions
 (send agent-b (fn [state] (assoc state :data (slurp url))))
 ```
 
+### Exiting after futures and agents (Iron Law JVM-5)
+
+clojure.org: "use of Agents starts a pool of non-daemon background threads that will prevent shutdown of the JVM. Use shutdown-agents to terminate these threads and allow shutdown." `future`, `pmap`, and `send-off` use a cached pool whose idle threads end after 60 seconds, so a `-main` that dereferenced one `future` took about 60 seconds to exit in a test with Clojure 1.12. `send` uses a fixed pool whose threads never end, so after a `send` the JVM does not exit on its own:
+
+```clojure
+;; good: the program exits as soon as -main returns
+(defn -main [& args]
+  (println @(future (compute)))
+  (shutdown-agents))
+```
+
+Call `shutdown-agents` only when the program is finishing. Running actions complete, but no new actions are accepted: a new `future` throws `RejectedExecutionException`, and a new `send` returns normally while its action never runs. `clj -X` runs `future` and `send-off` work on daemon threads, but a `send` still keeps the JVM running.
+
+### Exceptions in futures (Iron Law JVM-6)
+
+A `future` that throws prints nothing. The exception surfaces only when the future is dereferenced, wrapped in `java.util.concurrent.ExecutionException`:
+
+```clojure
+;; bad: a failure here is never seen
+(future (send-report! data))
+
+;; good: catch and log inside the body when nothing dereferences the future
+(future
+  (try (send-report! data)
+       (catch Exception e (log/error e "report failed"))))
+```
+
+Agents behave similarly: clojure.org says an exception in an agent action "will be cached in the Agent itself," so check `agent-error` or set an error handler.
+
+### core.async go blocks (Iron Law JVM-4)
+
+`go` runs its body on a small fixed pool of threads and parks, rather than blocks, at `<!`, `>!`, and `alt!`. The `go` docstring says go blocks "should not (either directly or indirectly) perform operations that may block indefinitely," which includes the core.async operations ending in `!!` and blocking I/O, because they can deplete the pool and stop every go block:
+
+```clojure
+;; bad: blocks a go thread
+(async/go (let [v (async/<!! ch)] (save-to-db! v)))
+
+;; good: park in go, and run blocking I/O on its own thread
+(async/go (let [v (async/<! ch)]
+            (async/<! (async/io-thread (save-to-db! v)))))
+```
+
+`io-thread` (core.async 1.9 and later) "may do blocking I/O but must not do extended computation," and it uses a virtual thread when one is available. On earlier core.async versions, or for work that mixes I/O and computation, use `async/thread`.
+
+In development, set the Java system property `clojure.core.async.go-checking` to `true`. core.async's own blocking operations, such as `<!!` and `>!!`, then check whether they run on a go block thread. The check does not cover other blocking I/O.
+
 ### `io!` macro
 
 Wrap I/O calls with `io!` to prevent accidental use inside STM transactions. Calling an `io!`-wrapped form inside `dosync` throws `IllegalStateException` rather than letting the I/O happen multiple times during a retry:

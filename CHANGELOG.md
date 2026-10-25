@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.1.20] - 2026-10-25
+
+### Added
+
+- The `clojure-jvm` skill opens with Iron Laws (JVM-1 through JVM-6): numbered rules that prevent bugs, data loss, resource leaks, and hung processes on the JVM. The agent does not write code that breaks a law, and when existing code breaks one, it reports the law ID, the location, and the correct pattern, then asks before changing code outside the task. Key Rules that guarded against bugs or security holes moved into the laws, and the remaining Key Rules are renumbered.
+- The `clojure-jvm` state reference covers `shutdown-agents` after `future`, `pmap`, and agents, and blocking calls inside core.async `go` blocks, including the `clojure.core.async.go-checking` property.
+- The state reference covers exceptions in futures and agents, and names `io-thread` for blocking I/O started from a `go` block.
+
+### Fixed
+
+- The exception reference no longer says `with-open` requires `AutoCloseable` (it calls `.close` on any value), and its "good" example no longer catches `AssertionError`. The state reference no longer says agent threads always time out: after `send`, the JVM does not exit until `shutdown-agents` runs.
+
 ## [0.1.19] - 2026-10-25
 
 ### Added

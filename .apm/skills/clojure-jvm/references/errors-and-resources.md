@@ -14,23 +14,31 @@ Part of the `clojure-jvm` skill. It applies to JVM Clojure and overrides the hos
 (throw (IllegalArgumentException. "x must be positive"))
 ```
 
-Never catch `Throwable`:
+Never swallow a `Throwable` (Iron Law JVM-2). Java documents `Error` (the superclass of `OutOfMemoryError`, `StackOverflowError`, and `AssertionError`) as indicating "serious problems that a reasonable application should not try to catch":
 
 ```clojure
-;; good
+;; good: catch what the code can handle
 (try (foo)
   (catch clojure.lang.ExceptionInfo ex ...)
-  (catch IllegalArgumentException ex ...)
-  (catch AssertionError t ...))
+  (catch IllegalArgumentException ex ...))
 
 ;; bad: swallows OutOfMemoryError, StackOverflowError, and assertion failures
 (try (foo)
-  (catch Throwable t ...))
+  (catch Throwable t (log/warn t "ignored")))
+
+;; acceptable: the top level of a thread or process reports, then exits or rethrows
+(defn -main [& args]
+  (try (run args)
+       (catch Throwable t
+         (log/error t "fatal")
+         (System/exit 1))))
 ```
+
+`clojure.main` follows the same pattern: it catches `Throwable` around the program, reports it, and exits.
 
 ## Resource Cleanup
 
-Use `with-open` rather than `try`/`finally`. It calls `.close` on each bound value when the body exits, in reverse declaration order:
+Bind a resource whose lifetime ends with the block in `with-open` rather than writing `try`/`finally` (Iron Law JVM-1). It calls `.close` on each bound value in a `finally` clause, in reverse declaration order:
 
 ```clojure
 ;; good
@@ -45,4 +53,4 @@ Use `with-open` rather than `try`/`finally`. It calls `.close` on each bound val
       (.close rdr))))
 ```
 
-`with-open` requires the bound value to implement `AutoCloseable` or `Closeable`. For resources that do not, fall back to `try`/`finally` and write the cleanup explicitly.
+`with-open` calls `.close` by name, so it works on any object with a no-argument `.close` method, not only `AutoCloseable` and `Closeable` values. Use `try`/`finally` when cleanup is a different call, such as `(.unlock lock)` or `(.shutdown executor)`. Do not bind a resource in `with-open` when it must outlive the block, such as a stream the function returns or a pool a component holds. Its owner closes it. Closing an `ExecutorService` waits for its running tasks to finish.
