@@ -40,6 +40,7 @@ Update later with `apm update [-g]`. Remove with `apm uninstall brackendev/cloju
 
 - [Clojure CLI](https://clojure.org/guides/install_clojure) and Java 17 or higher.
 - [clojure-skills](https://github.com/brackendev/clojure-skills) installed alongside, for the host-neutral baseline.
+- [Babashka](https://babashka.org) (`bb`) to run the `failure-hints` hook. Without it, the hook does nothing and prints a notice on standard error.
 
 ## Command guide
 
@@ -52,6 +53,20 @@ This package provides no slash commands. It adds the auto-triggered `clojure-jvm
 | Skill | Triggers |
 |-------|----------|
 | **clojure-jvm** | `.clj` files, `deps.edn` projects, `project.clj`, `build.clj`, Java interop (`java.*`, `import`, `Throwable`, `Exception`, `AutoCloseable`), `with-open`, refs / agents / STM (`dosync`, `alter`, `ref`, `agent`, `send`, `send-off`, `io!`), `alter-var-root`, `gen-class`, `proxy`, qualified methods (`Class/method`, `Class/.method`, `Class/new`), `:param-tags` (`^[long]`), array class symbols (`String/1`), functional interfaces, Java streams (`stream-into!`, `stream-reduce!`), `clojure.tools.logging`, `clojure.java.io`, `clojure.java.process`, `clojure.repl.deps` (`add-lib`, `sync-deps`), `clojure.math`, `clojure.core.async` on the JVM, the Clojure CLI (`clj`, `clojure`), `tools.build`, `clj-kondo`, `cljfmt`, Cognitect `test-runner`, nREPL, or `clojure-mcp`. Covers Java interop, JVM-typed exception handling, JVM resource cleanup, the reference primitives, `alter-var-root` workflow, and the JVM project layout and tooling. Defers to the [clojure](https://github.com/brackendev/clojure-skills) skill for host-neutral style. |
+
+## Hooks
+
+The package includes one hook, `failure-hints`. When a `clj`, `clojure`, or `lein` command prints a Clojure error, the hook adds a short hint for that error to the agent's context:
+
+- A reader error names the file and line where the unclosed form starts and suggests running clj-kondo on the file.
+- A macroexpansion error names the macro call with the wrong shape.
+- An unresolved symbol names the symbol and the `ns` form to check.
+- A classpath error names the namespace file that the command's classpath is missing and what to check.
+- When the output names a "Full report at" file, the hint says what that report holds.
+
+The hook reads the output of a command that fails and of a command whose pipeline succeeds, such as `clj ... 2>&1 | tee error.log`, so saving the output to a log file does not hide the error. Each hint appears once per session for the same command and error. When the same command fails the same way again, the hook says so instead of repeating the hint, so the agent changes its approach rather than rerunning the command. A command that only prints or searches error text, such as `cat` or `grep`, gets no hint, and output without one of these errors, such as a failing test assertion, gets none either. The hint points to the `clojure-debug` skill from clojure-skills for the full procedure.
+
+The hook has been run only under Claude Code, where it registers `PostToolUse` and `PostToolUseFailure`. The package ships empty Copilot and Cursor hook files, so APM writes no Copilot hook and no native Cursor hook. In a trusted folder Copilot CLI also runs the Claude Code copy, and the script recognizes Copilot's input there and does nothing. Cursor can read the Claude Code copy through its import of Claude Code settings, which has not been tested. APM installs the generic copy for Codex, Gemini CLI, Kiro, and Windsurf, and the script acts only on Claude Code's input and event names, so it is expected to do nothing there. Gemini CLI does not know the `PostToolUseFailure` event and prints a warning at startup that it skips it. OpenCode and Grok Build have no hook support.
 
 ## Contributing
 

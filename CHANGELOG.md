@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.1.19] - 2026-10-25
+
+### Added
+
+- The `clojure-jvm` skill's `references/debugging.md` covers the Clojure CLI error format and its read, macroexpansion, compile, and execution phases, the "Full report at" file, `*e` and `Throwable->map`, classpath errors, and the common JVM exception types. The `clojure-debug` skill in clojure-skills points to it.
+- The `failure-hints` hook adds a short hint when a `clj`, `clojure`, or `lein` command prints a Clojure reader, macroexpansion, unresolved-symbol, or classpath error. The hint names the next check and the full report file, and a repeated failure gets a note to change the approach. It runs under Claude Code and needs Babashka.
+
+### Changed
+
+- The `clojure-jvm` skill loads a short entry file that keeps the Key Rules and routes each task to a reference file: Java interop, exceptions and resource cleanup, and vars, refs, and agents. The detailed guidance moved into those files without changes, so less text loads on every matching task and the agent reads the detail for the topic at hand.
+
 ## [0.1.18] - 2026-10-25
 
 ### Changed

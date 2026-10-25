@@ -8,6 +8,8 @@ For people working on the plugin source. End-user install instructions live in [
 |------|---------|
 | `apm.yml` | Package manifest (`type: skill`, no MCP dependencies). |
 | `.apm/skills/<name>/` | Canonical skill source. APM deploys from here. Each directory holds `SKILL.md` plus optional `agents/openai.yaml`, `references/`, `scripts/`, `examples/`. |
+| `.apm/hooks/` | Hook definitions. `failure-hints.json` holds the generic copy, and `copilot-hooks.json` and `cursor-hooks.json` are empty, so Copilot CLI and Cursor receive no native copy. `scripts/` holds the bash launcher and the Babashka script. |
+| `tests/hooks/` | Hook test suites. They are repository files, not package content, and APM does not deploy them. |
 | `.opencode/skills` | Symlink to `../.apm/skills`. OpenCode finds it from any directory in the repository, so an OpenCode session loads the canonical skills and their supporting files without an APM install. |
 | `opencode.jsonc` | Local OpenCode configuration. |
 | `README.md` | End-user documentation. |
@@ -26,6 +28,15 @@ Do not add `.claude-plugin/`, `.codex-plugin/`, `.agents/plugins/marketplace.jso
 3. Add a `CHANGELOG.md` entry under `[Unreleased]` for every change to a published file, including documentation-only changes.
 4. Increment the `version` field in `apm.yml`.
 
+## Adding or modifying a hook
+
+1. Edit the hook JSON in `.apm/hooks/<name>.json`, keyed by lifecycle event (`PostToolUse`, `PostToolUseFailure`). Use the matcher `"*"` and choose the tool inside the script, because APM passes matchers through unchanged.
+2. Keep `.apm/hooks/cursor-hooks.json` empty: an install fails when a hook reaches Cursor both natively and through its import of Claude Code settings, and APM has no Cursor mapping for `PostToolUseFailure`. Keep `.apm/hooks/copilot-hooks.json` empty until the hook is verified under Copilot CLI. A non-empty file there must use Copilot's flat camelCase format.
+3. Write the hook as a Babashka script, `.apm/hooks/scripts/<name>.bb`, started by a bash launcher, `.apm/hooks/scripts/<name>.sh`. When `bb` is missing, the launcher prints that the hook is inactive to standard error and exits 0. Reference the launcher as `${PLUGIN_ROOT}/.apm/hooks/scripts/<name>.sh`. The `.apm/` segment is required, or APM logs "Hook script not found". Keep the launcher executable.
+4. Claude Code sends a command that exits with a nonzero status to `PostToolUseFailure` with its output in `error`, and a command whose pipeline exits 0 to `PostToolUse` with its output in `tool_response.stdout` and `tool_response.stderr`. Read both.
+5. Add cases to the suites in `tests/hooks/` and run them (see "Hook tests" below).
+6. Update `README.md`, add a `CHANGELOG.md` entry under `[Unreleased]`, and increment the `version` field in `apm.yml`.
+
 ## Validation
 
 Configuration files:
@@ -41,6 +52,10 @@ Runtime install (requires `apm` and the runtime CLIs you want to verify: `claude
 - Run `apm install --target all`, `apm update`, and `apm uninstall` in a clean temporary project. Pre-create the runtime roots: `.agents/`, `.claude/`, `.cursor/`, `.opencode/`, `.gemini/`, `.github/`, `.windsurf/`. With several runtime roots present, APM stops with "Multiple harnesses detected" unless the install names a target. `apm update` reuses the targets that the install records in the project's `apm.yml`.
 - Exercise user scope with `apm install brackendev/clojure-jvm-skills -g [--target ...]` and `apm uninstall brackendev/clojure-jvm-skills -g`. A local filesystem path (`apm install /absolute/path -g`) is also accepted.
 - Confirm OpenCode deployment from the temporary project with `opencode api GET "/api/skill?location[directory]=$PWD"`, which lists the skills OpenCode discovers and their source paths. The first request for a directory can return an empty list while OpenCode loads the skills, so repeat it before reading the result.
+
+### Hook tests
+
+Run every hook suite with `bb tests/hooks/run.bb`. It needs `bb`, `git`, and `apm`, and a missing requirement fails the run. `failure-hints-hook.bb` runs the hook with Clojure CLI error output recorded from Clojure 1.12, and `install-check.bb` installs the package with APM at project and user scope, with `--target claude` and with `--target all`, and checks the deployed hook.
 
 ## Skill conventions
 
