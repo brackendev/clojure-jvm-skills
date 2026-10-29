@@ -8,7 +8,7 @@ For people working on the plugin source. End-user install instructions live in [
 |------|---------|
 | `apm.yml` | Package manifest (`type: skill`, no MCP dependencies). |
 | `.apm/skills/<name>/` | Canonical skill source. APM deploys from here. Each directory holds `SKILL.md` plus optional `agents/openai.yaml`, `references/`, `scripts/`, `examples/`. |
-| `.apm/hooks/` | Hook definitions. `failure-hints.json` holds the generic copy, and `copilot-hooks.json` and `cursor-hooks.json` are empty, so Copilot CLI and Cursor receive no native copy. `scripts/` holds the bash launcher and the Babashka script. |
+| `.apm/hooks/` | Hook definitions. `failure-hints.json` and `jvm-rules.json` hold the generic copies, and `copilot-hooks.json` and `cursor-hooks.json` are empty, so Copilot CLI and Cursor receive no native copy. `scripts/` holds each hook's bash launcher and Babashka script, and `jvm-rules.md`, the condensed Iron Laws that `jvm-rules` delivers. |
 | `tests/hooks/` | Hook test suites. They are repository files, not package content, and APM does not deploy them. |
 | `.opencode/skills` | Symlink to `../.apm/skills`. OpenCode finds it from any directory in the repository, so an OpenCode session loads the canonical skills and their supporting files without an APM install. |
 | `opencode.jsonc` | Local OpenCode configuration. |
@@ -25,7 +25,7 @@ Do not add `.claude-plugin/`, `.codex-plugin/`, `.agents/plugins/marketplace.jso
 
 1. Edit `.apm/skills/<name>/SKILL.md`.
 2. Update `README.md` if the change is user-facing.
-3. Add a `CHANGELOG.md` entry under `[Unreleased]` for every change to a published file, including documentation-only changes.
+3. Add a `CHANGELOG.md` entry for every change to a published file, including documentation-only changes, under a `## [x.y.z] - YYYY-MM-DD` heading for the new `apm.yml` version. Leave `## [Unreleased]` empty above it.
 4. Increment the `version` field in `apm.yml`.
 
 ## Adding or modifying a hook
@@ -35,7 +35,11 @@ Do not add `.claude-plugin/`, `.codex-plugin/`, `.agents/plugins/marketplace.jso
 3. Write the hook as a Babashka script, `.apm/hooks/scripts/<name>.bb`, started by a bash launcher, `.apm/hooks/scripts/<name>.sh`. When `bb` is missing, the launcher prints that the hook is inactive to standard error and exits 0. Reference the launcher as `${PLUGIN_ROOT}/.apm/hooks/scripts/<name>.sh`. The `.apm/` segment is required, or APM logs "Hook script not found". Keep the launcher executable.
 4. Claude Code sends a command that exits with a nonzero status to `PostToolUseFailure` with its output in `error`, and a command whose pipeline exits 0 to `PostToolUse` with its output in `tool_response.stdout` and `tool_response.stderr`. Read both.
 5. Add cases to the suites in `tests/hooks/` and run them (see "Hook tests" below).
-6. Update `README.md`, add a `CHANGELOG.md` entry under `[Unreleased]`, and increment the `version` field in `apm.yml`.
+6. Update `README.md`, increment the `version` field in `apm.yml`, and add a `CHANGELOG.md` entry under a `## [x.y.z] - YYYY-MM-DD` heading for that version.
+
+## Changing an Iron Law
+
+The rules hook delivers `.apm/hooks/scripts/jvm-rules.md`, which condenses each Iron Law in `.apm/skills/clojure-jvm/SKILL.md` into one `- JVM-<n>: ...` line. When a law changes, update its line in the same change, keeping the law's exceptions. The coordinator's drift check compares the law IDs in both files but cannot compare their meaning.
 
 ## Validation
 
@@ -55,7 +59,7 @@ Runtime install (requires `apm` and the runtime CLIs you want to verify: `claude
 
 ### Hook tests
 
-Run every hook suite with `bb tests/hooks/run.bb`. It needs `bb`, `git`, and `apm`, and a missing requirement fails the run. `failure-hints-hook.bb` runs the hook with Clojure CLI error output recorded from Clojure 1.12, and `install-check.bb` installs the package with APM at project and user scope, with `--target claude` and with `--target all`, and checks the deployed hook.
+Run every hook suite with `bb tests/hooks/run.bb`. It needs `bb`, `git`, and `apm`, and a missing requirement fails the run. `failure-hints-hook.bb` runs the hook with Clojure CLI error output recorded from Clojure 1.12, and `install-check.bb` installs the package with APM at project and user scope, with `--target claude` and with `--target all`, and checks the deployed hook. `jvm-rules-hook.bb` checks when `jvm-rules` delivers the rules: at session start, on the first matching edit, after a clear or compaction, and never twice or outside a JVM Clojure project.
 
 ## Skill conventions
 

@@ -1,6 +1,7 @@
 ;; Runs every hook test suite against this repository:
 ;;   1. The failure-hints hook end to end, with recorded Clojure CLI errors.
-;;   2. A local APM install at project and user scope, checking the deployed
+;;   2. The jvm-rules hook end to end, for session starts and edits.
+;;   3. A local APM install at project and user scope, checking the deployed
 ;;      hook scripts.
 ;; Requires bb, git, and apm. A missing requirement fails the run. No
 ;; suite is skipped.
@@ -23,6 +24,7 @@
 
 (def suites
   [["failure-hints hook" "failure-hints-hook.bb" scripts]
+   ["jvm-rules hook" "jvm-rules-hook.bb" scripts]
    ["APM install" "install-check.bb" root]])
 
 (def failed

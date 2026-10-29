@@ -1,11 +1,13 @@
 ;; Installs the package with APM into a temporary project and a temporary HOME,
 ;; at project scope and at user scope, and checks the deployed failure-hints
-;; hook: the scripts are present and identical to the source, the launcher is
+;; and jvm-rules hooks. For failure-hints: the scripts are present and identical to the source, the launcher is
 ;; executable, the deployed copy gives a hint for a recorded Clojure CLI error,
-;; and a launcher without Babashka reports the hook as inactive. It also checks
+;; and a launcher without Babashka reports the hook as inactive. For jvm-rules:
+;; the scripts and the rules file are present and identical to the source, and
+;; the deployed copy delivers the rules at session start. It also checks
 ;; that an install with every target succeeds at both scopes, gives Claude Code
-;; both events, writes no native Cursor hook, and gives Copilot no copy of the
-;; hook.
+;; the events of both hooks, writes no native Cursor hook, and gives Copilot no
+;; copy of either hook.
 ;;
 ;; Usage: bb install-check.bb <package source directory>
 (require '[babashka.fs :as fs]
@@ -41,6 +43,8 @@
   (and (fs/regular-file? a) (= (slurp (str a)) (slurp (str b)))))
 
 (def hook-files ["failure-hints.sh" "failure-hints.bb"])
+
+(def rules-files ["jvm-rules.sh" "jvm-rules.bb" "jvm-rules.md"])
 
 ;; A PATH with what the launcher needs before it looks for bb.
 (def path-without-bb
@@ -78,6 +82,28 @@
                                          "/bin/bash" (str (fs/path deployed "failure-hints.sh")))]
       (support/check (and (zero? exit) (str/includes? err "is inactive: Babashka (bb) is not installed"))
                      (str label ": the launcher without bb did not report the hook as inactive (exit " exit ")")))))
+
+(support/write-file project "deps.edn" "{:paths [\"src\"]}\n")
+
+(doseq [scope [(fs/path project ".claude") (fs/path home ".claude")]
+        :let [label (str (fs/relativize work scope))
+              deployed (some-> (first (fs/glob scope "**/jvm-rules.sh" {:hidden true})) fs/parent)]]
+  (support/check deployed (str label ": jvm-rules.sh was not deployed"))
+  (when deployed
+    (doseq [file rules-files]
+      (support/check (and (same-file? (fs/path deployed file) (fs/path package-source ".apm/hooks/scripts" file))
+                          (or (not= file "jvm-rules.sh") (fs/executable? (fs/path deployed file))))
+                     (str label ": " file " is missing, differs from the source, or is not executable")))
+    (let [{:keys [exit out]} (support/run-hook (fs/path deployed "jvm-rules.sh")
+                                               (json/generate-string {"session_id" (str "install-" (random-uuid))
+                                                                      "hook_event_name" "SessionStart"
+                                                                      "source" "startup"
+                                                                      "cwd" project}))]
+      (support/check (and (zero? exit)
+                          (some-> (not-empty out) json/parse-string
+                                  (get-in ["hookSpecificOutput" "additionalContext"])
+                                  (str/includes? "JVM-1:")))
+                     (str label ": the deployed jvm-rules hook did not deliver the rules at session start")))))
 
 ;; The test suites are repository files, not package content.
 (support/check (empty? (for [dir [(fs/path project ".claude") (fs/path home ".claude")]
@@ -118,12 +144,16 @@
                       (every? #(contains? (get (hook-scripts claude-config) %) "failure-hints.sh")
                               ["PostToolUse" "PostToolUseFailure"]))
                  (str label ": Claude Code settings do not register failure-hints for both events"))
+  (support/check (and (fs/exists? claude-config)
+                      (every? #(contains? (get (hook-scripts claude-config) %) "jvm-rules.sh")
+                              ["SessionStart" "PostToolUse"]))
+                 (str label ": Claude Code settings do not register jvm-rules for SessionStart and PostToolUse"))
   (support/check (or (not (fs/exists? cursor-config)) (every? empty? (vals (hook-scripts cursor-config))))
                  (str label ": .cursor/hooks.json contains a native hook"))
   (support/check (empty? (for [f (when (fs/exists? copilot-dir) (fs/glob copilot-dir "*.json"))
-                               :when (str/includes? (slurp (str f)) "failure-hints.sh")]
+                               :when (re-find #"failure-hints\.sh|jvm-rules\.sh" (slurp (str f)))]
                            (str (fs/file-name f))))
-                 (str label ": Copilot received a hook file that runs failure-hints"))
+                 (str label ": Copilot received a hook file that runs failure-hints or jvm-rules"))
   (when (> (:fail @support/results) before)
     (println (str/replace log #"(?m)^" "    "))))
 

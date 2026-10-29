@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.1.23] - 2026-10-29
+
+### Added
+
+- `jvm-rules` hook: delivers the condensed JVM-1 through JVM-6 Iron Laws to the agent at session start, after `/clear` or a compaction, and on the first matching edit when the session started outside a matching project, with an instruction to load the `clojure-jvm` skill along with the `clojure` skill. Verified only under Claude Code. Copilot and Cursor receive no copy.
+
 ## [0.1.22] - 2026-10-29
 
 ### Changed

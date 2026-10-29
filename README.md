@@ -40,7 +40,7 @@ Update later with `apm update [-g]`. Remove with `apm uninstall brackendev/cloju
 
 - [Clojure CLI](https://clojure.org/guides/install_clojure) and Java 8 or higher, the minimum that Clojure and the Clojure CLI document. [clojure-mcp](https://github.com/bhauman/clojure-mcp), which the skill uses when it is configured, needs Java 17 or higher.
 - [clojure-skills](https://github.com/brackendev/clojure-skills) installed alongside, for the host-neutral baseline.
-- [Babashka](https://babashka.org) (`bb`) to run the `failure-hints` hook. Without it, the hook does nothing and prints a notice on standard error.
+- [Babashka](https://babashka.org) (`bb`) to run the `failure-hints` and `jvm-rules` hooks. Without it, the hooks do nothing and print a notice on standard error.
 
 ## Command guide
 
@@ -56,7 +56,11 @@ This package provides no slash commands. It adds the auto-triggered `clojure-jvm
 
 ## Hooks
 
-The package includes one hook, `failure-hints`. When a `clj`, `clojure`, or `lein` command prints a Clojure error, the hook adds a short hint for that error to the agent's context:
+The package includes two hooks, `failure-hints` and `jvm-rules`.
+
+### `failure-hints`
+
+When a `clj`, `clojure`, or `lein` command prints a Clojure error, the hook adds a short hint for that error to the agent's context:
 
 - A reader error names the file and line where the unclosed form starts and suggests running clj-kondo on the file.
 - A macroexpansion error names the macro call with the wrong shape.
@@ -67,6 +71,12 @@ The package includes one hook, `failure-hints`. When a `clj`, `clojure`, or `lei
 The hook reads the output of a command that fails and of a command whose pipeline succeeds, such as `clojure ... 2>&1 | tee error.log`, so saving the output to a log file does not hide the error. Each hint appears once per session for the same command and error. When the same command fails the same way again, the hook says so instead of repeating the hint, so the agent changes its approach rather than rerunning the command. A command that only prints or searches error text, such as `cat` or `grep`, gets no hint, and output without one of these errors, such as a failing test assertion, gets none either. The hint points to the `clojure-debug` skill from clojure-skills for the full procedure.
 
 The hook has been run only under Claude Code, where it registers `PostToolUse` and `PostToolUseFailure`. The package ships empty Copilot and Cursor hook files, so APM writes no Copilot hook and no native Cursor hook. In a trusted folder Copilot CLI also runs the Claude Code copy, and the script recognizes Copilot's input there and does nothing. Cursor can read the Claude Code copy through its import of Claude Code settings, which has not been tested. APM installs the generic copy for Codex, Gemini CLI, Kiro, and Windsurf, and the script acts only on Claude Code's input and event names, so it is expected to do nothing there. Gemini CLI does not know the `PostToolUseFailure` event and prints a warning at startup that it skips it. OpenCode and Grok Build have no hook support.
+
+### `jvm-rules`
+
+Agents seldom load an auto-triggered skill on their own, so this hook gives the agent the JVM-1 through JVM-6 Iron Laws of the `clojure-jvm` skill as text. In a Leiningen project, a `tools.build` project, or a `deps.edn` project that is not a ClojureDart project, it puts the condensed laws into the agent's context when a session starts, and again after `/clear` or a compaction, with an instruction to load the `clojure-jvm` skill along with the `clojure` skill. When the session starts outside such a project, for example in a parent directory, the hook delivers the laws on the first edit of a `.clj`, `.cljc`, or `.edn` file in a matching project instead, once per session. The hook never edits a file. Without Babashka it does nothing and prints a notice on standard error.
+
+The hook has been run only under Claude Code, where it registers `SessionStart` and `PostToolUse`. The package ships empty Copilot and Cursor hook files, so APM writes no Copilot hook and no native Cursor hook. APM also installs the generic copy for Codex, Gemini CLI, Kiro, and Windsurf, where its effect has not been tested. OpenCode and Grok Build have no hook support.
 
 ## Contributing
 

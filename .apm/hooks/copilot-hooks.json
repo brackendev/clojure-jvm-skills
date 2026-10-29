@@ -1,5 +1,5 @@
 {
-  "description": "Empty, so Copilot CLI receives no copy of failure-hints. The hook has been verified only on Claude Code.",
+  "description": "Empty, so Copilot CLI receives no copy of failure-hints or jvm-rules. Both hooks have been verified only on Claude Code.",
   "version": 1,
   "hooks": {}
 }
